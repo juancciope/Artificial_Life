@@ -74,26 +74,26 @@ class MIDIController {
     }
 
     handleControlChange(ccNumber, value) {
-        // Map CC numbers to controls (adjust based on your MIDI controller)
+        // Arturia MiniLab MkII specific mappings
         const normalizedValue = value / 127; // Convert 0-127 to 0-1
         
         switch(ccNumber) {
-            case 1: // Modulation wheel or first knob
+            // Top row knobs (Knob 1-8)
+            case 74: // Knob 1 - Radiation Level
                 this.alife.session.radiation = Math.floor(value * 100 / 127);
                 document.getElementById('radiationSlider').value = this.alife.session.radiation;
                 document.getElementById('radiationValue').textContent = this.alife.session.radiation;
                 break;
                 
-            case 7: // Volume fader - control population limit
+            case 71: // Knob 2 - Population Limit
                 this.alife.session.populationLimit = Math.floor(20 + (value * 80 / 127)); // 20-100 range
                 break;
                 
-            case 10: // Pan - control DNA chaos chance
+            case 76: // Knob 3 - DNA Chaos Chance
                 this.alife.session.dnaChaosChance = Math.floor(value * 50 / 127); // 0-50%
                 break;
                 
-            case 16: // First knob on many controllers
-                // Control grid size
+            case 77: // Knob 4 - Grid Size
                 const newGridSize = Math.floor(32 + (value * 32 / 127)); // 32-64 range
                 if (newGridSize !== this.alife.gridSize) {
                     this.alife.gridSize = newGridSize;
@@ -102,59 +102,171 @@ class MIDIController {
                 }
                 break;
                 
+            case 93: // Knob 5 - Cell Size
+                this.alife.cellSize = Math.floor(4 + (value * 12 / 127)); // 4-16 pixel range
+                this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
+                this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
+                break;
+                
+            case 73: // Knob 6 - Animation Speed
+                // Control frame rate delay (lower value = faster)
+                this.alife.frameDelay = Math.floor(10 + (value * 90 / 127)); // 10-100ms delay
+                break;
+                
+            case 75: // Knob 7 - Spawn Rate
+                this.alife.autoSpawnRate = Math.floor(value / 12.7); // 0-10 lifeforms per auto-spawn
+                break;
+                
+            case 114: // Knob 8 - Visual Intensity
+                // Control shadow blur for visual effect
+                this.alife.visualIntensity = Math.floor(2 + (value * 18 / 127)); // 2-20 blur
+                break;
+                
+            // Bottom row knobs (Knob 9-16)
+            case 18: // Knob 9
+            case 19: // Knob 10
+            case 16: // Knob 11
+            case 17: // Knob 12
+            case 91: // Knob 13
+            case 79: // Knob 14
+            case 72: // Knob 15
+            case 92: // Knob 16
+                // Reserved for future features
+                console.log(`Reserved knob CC ${ccNumber}: ${value}`);
+                break;
+                
+            // Mod Wheel
+            case 1: // Modulation wheel - Global chaos
+                if (value > 100) {
+                    // High mod wheel = chaos mode
+                    this.alife.chaosMode = true;
+                    this.alife.session.dnaChaosChance = Math.floor(30 + (value - 100) * 20 / 27); // 30-50%
+                } else {
+                    this.alife.chaosMode = false;
+                }
+                break;
+                
+            // Pitch Bend (if implemented)
+            case 224: // Pitch bend - time dilation effect
+                // Could be used for slow-motion/fast-forward
+                break;
+                
             default:
                 console.log(`Unmapped CC: ${ccNumber}, Value: ${value}`);
         }
     }
 
     handleNoteOn(note, velocity) {
-        // Map MIDI notes to actions
+        // Arturia MiniLab MkII pads mapping (8 velocity-sensitive pads)
         switch(note) {
-            case 36: // C1 - Start Life
+            // Pad Bank A (default)
+            case 36: // Pad 1 - Start Life
                 this.alife.startLife();
                 break;
                 
-            case 37: // C#1 - Pause
-                this.alife.pauseLife();
+            case 37: // Pad 2 - Pause/Resume
+                if (this.alife.isRunning) {
+                    this.alife.pauseLife();
+                } else {
+                    this.alife.startLife();
+                }
                 break;
                 
-            case 38: // D1 - Reset
+            case 38: // Pad 3 - Reset Everything
                 this.alife.resetLife();
                 break;
                 
-            case 39: // D#1 - Thanos Snap
-                this.alife.thanosSnap();
+            case 39: // Pad 4 - Thanos Snap (velocity sensitive)
+                if (velocity > 100) {
+                    // Hard hit = kill 75%
+                    this.thanosSnapIntense();
+                } else {
+                    // Soft hit = normal 50%
+                    this.alife.thanosSnap();
+                }
                 break;
                 
-            case 40: // E1 - Toggle Gravity
+            case 40: // Pad 5 - Toggle Gravity
                 this.alife.session.gravityOn = !this.alife.session.gravityOn;
                 document.getElementById('gravityToggle').checked = this.alife.session.gravityOn;
                 break;
                 
-            case 41: // F1 - Toggle Trails
+            case 41: // Pad 6 - Toggle Trails
                 this.alife.session.drawTrails = !this.alife.session.drawTrails;
                 document.getElementById('trailsToggle').checked = this.alife.session.drawTrails;
                 break;
                 
-            case 42: // F#1 - Spawn random lifeforms
-                for (let i = 0; i < 5; i++) {
+            case 42: // Pad 7 - Spawn Burst (velocity sensitive)
+                const spawnCount = Math.floor(velocity / 16) + 1; // 1-8 based on velocity
+                for (let i = 0; i < spawnCount; i++) {
                     this.alife.createLifeform();
                 }
                 break;
                 
-            case 43: // G1 - Kill random lifeforms
-                const lifeforms = Array.from(this.alife.lifeforms.values());
-                const toRemove = Math.min(5, lifeforms.length);
-                for (let i = 0; i < toRemove; i++) {
-                    const randomLifeform = lifeforms[Math.floor(Math.random() * lifeforms.length)];
-                    this.alife.removeLifeform(randomLifeform.id);
-                    lifeforms.splice(lifeforms.indexOf(randomLifeform), 1);
-                }
+            case 43: // Pad 8 - Population Control (velocity sensitive)
+                const killCount = Math.floor(velocity / 25) + 1; // 1-5 based on velocity
+                this.killRandomLifeforms(killCount);
+                break;
+                
+            // Keyboard notes for precise control
+            case 48: // C2 - Emergency stop
+                this.alife.pauseLife();
+                break;
+                
+            case 50: // D2 - Radiation burst
+                this.radiationBurst();
+                break;
+                
+            case 52: // E2 - Spawn at cursor (if implemented)
+                break;
+                
+            case 53: // F2 - Clear all
+                this.alife.resetLife();
                 break;
                 
             default:
                 console.log(`Unmapped Note: ${note}, Velocity: ${velocity}`);
         }
+    }
+    
+    // Additional MiniLab MkII specific functions
+    thanosSnapIntense() {
+        const lifeforms = Array.from(this.alife.lifeforms.values());
+        const toRemove = Math.floor(lifeforms.length * 0.75); // Kill 75%
+        
+        for (let i = 0; i < toRemove; i++) {
+            if (lifeforms.length > 0) {
+                const randomIndex = Math.floor(Math.random() * lifeforms.length);
+                const lifeform = lifeforms[randomIndex];
+                this.alife.removeLifeform(lifeform.id);
+                lifeforms.splice(randomIndex, 1);
+            }
+        }
+    }
+    
+    killRandomLifeforms(count) {
+        const lifeforms = Array.from(this.alife.lifeforms.values());
+        const toRemove = Math.min(count, lifeforms.length);
+        
+        for (let i = 0; i < toRemove; i++) {
+            if (lifeforms.length > 0) {
+                const randomIndex = Math.floor(Math.random() * lifeforms.length);
+                const lifeform = lifeforms[randomIndex];
+                this.alife.removeLifeform(lifeform.id);
+                lifeforms.splice(randomIndex, 1);
+            }
+        }
+    }
+    
+    radiationBurst() {
+        // Temporary radiation spike
+        const originalRadiation = this.alife.session.radiation;
+        this.alife.session.radiation = 100;
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            this.alife.session.radiation = originalRadiation;
+        }, 2000);
     }
 
     handleNoteOff(note) {
@@ -168,24 +280,36 @@ class MIDIController {
         }
     }
 
-    // Method to get MIDI mapping info
+    // Method to get MiniLab MkII MIDI mapping info
     getMIDIMapping() {
         return {
-            knobs: {
-                'CC 1': 'Radiation Level (0-100)',
-                'CC 7': 'Population Limit (20-100)',
-                'CC 10': 'DNA Chaos Chance (0-50%)',
-                'CC 16': 'Grid Size (32-64)'
+            topRowKnobs: {
+                'Knob 1 (CC 74)': 'Radiation Level (0-100)',
+                'Knob 2 (CC 71)': 'Population Limit (20-100)', 
+                'Knob 3 (CC 76)': 'DNA Chaos Chance (0-50%)',
+                'Knob 4 (CC 77)': 'Grid Size (32-64)',
+                'Knob 5 (CC 93)': 'Cell Size (4-16px)',
+                'Knob 6 (CC 73)': 'Animation Speed',
+                'Knob 7 (CC 75)': 'Auto Spawn Rate',
+                'Knob 8 (CC 114)': 'Visual Intensity'
             },
             pads: {
-                'C1 (36)': 'Start Life',
-                'C#1 (37)': 'Pause',
-                'D1 (38)': 'Reset',
-                'D#1 (39)': 'Thanos Snap',
-                'E1 (40)': 'Toggle Gravity',
-                'F1 (41)': 'Toggle Trails',
-                'F#1 (42)': 'Spawn 5 Lifeforms',
-                'G1 (43)': 'Kill 5 Random Lifeforms'
+                'Pad 1': 'Start Life',
+                'Pad 2': 'Pause/Resume (Smart Toggle)',
+                'Pad 3': 'Reset Everything',
+                'Pad 4': 'Thanos Snap (Velocity: Soft=50%, Hard=75%)',
+                'Pad 5': 'Toggle Gravity',
+                'Pad 6': 'Toggle Trails',
+                'Pad 7': 'Spawn Burst (Velocity = Count)',
+                'Pad 8': 'Kill Random (Velocity = Count)'
+            },
+            modWheel: {
+                'Mod Wheel': 'Chaos Mode (>100 = Extreme mutations)'
+            },
+            keyboard: {
+                'C2': 'Emergency Stop',
+                'D2': 'Radiation Burst (2 sec)',
+                'F2': 'Clear All'
             }
         };
     }
