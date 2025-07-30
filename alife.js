@@ -32,6 +32,7 @@ class ArtificialLife {
         };
         
         this.initializeControls();
+        this.initializeMIDI();
         this.startLife();
     }
     
@@ -62,6 +63,13 @@ class ArtificialLife {
             this.session.radiation = parseInt(e.target.value);
             document.getElementById('radiationValue').textContent = e.target.value;
         });
+    }
+    
+    initializeMIDI() {
+        // Initialize MIDI controller if available
+        if (typeof MIDIController !== 'undefined') {
+            this.midiController = new MIDIController(this);
+        }
     }
     
     switchTab(tabName) {

@@ -172,6 +172,13 @@ header {
     margin-top: 0;
 }
 
+.about-content h5 {
+    color: var(--bright-red);
+    margin: 12px 0 5px 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
 .about-content p {
     margin: 8px 0;
 }

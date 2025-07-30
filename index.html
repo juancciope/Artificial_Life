@@ -74,11 +74,25 @@
                             
                             <h4>MIDI Integration</h4>
                             <p>Connect any MIDI controller to control the simulation in real-time:</p>
+                            
+                            <h5>Knobs/Faders (CC Messages):</h5>
                             <ul>
-                                <li><strong>Knobs:</strong> Adjust radiation, population, mutation rates</li>
-                                <li><strong>Pads:</strong> Trigger Thanos Snap, spawn lifeforms, toggle gravity</li>
-                                <li><strong>Faders:</strong> Control environmental parameters live</li>
-                                <li><strong>Perfect for VJ sets</strong> - responsive visual performance tool</li>
+                                <li><strong>CC 1:</strong> Radiation Level (0-100)</li>
+                                <li><strong>CC 7:</strong> Population Limit (20-100)</li>
+                                <li><strong>CC 10:</strong> DNA Chaos Chance (0-50%)</li>
+                                <li><strong>CC 16:</strong> Grid Size (32-64)</li>
+                            </ul>
+                            
+                            <h5>Pads/Keys (Note Messages):</h5>
+                            <ul>
+                                <li><strong>C1 (36):</strong> Start Life</li>
+                                <li><strong>C#1 (37):</strong> Pause</li>
+                                <li><strong>D1 (38):</strong> Reset</li>
+                                <li><strong>D#1 (39):</strong> Thanos Snap</li>
+                                <li><strong>E1 (40):</strong> Toggle Gravity</li>
+                                <li><strong>F1 (41):</strong> Toggle Trails</li>
+                                <li><strong>F#1 (42):</strong> Spawn 5 Lifeforms</li>
+                                <li><strong>G1 (43):</strong> Kill 5 Random</li>
                             </ul>
                         </div>
                     </div>
@@ -100,6 +114,7 @@
         </footer>
     </div>
     
+    <script src="midi.js"></script>
     <script src="alife.js"></script>
 </body>
 </html>
