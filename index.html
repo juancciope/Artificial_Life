@@ -14,69 +14,72 @@
         </header>
         
         <div class="controls-panel">
-            <div class="control-section">
-                <div class="tab-container">
-                    <div class="tabs">
-                        <button class="tab-btn active" data-tab="controls">Controls</button>
-                        <button class="tab-btn" data-tab="about">About</button>
-                    </div>
-                    <div class="tab-content">
-                        <div id="controls-tab" class="tab-panel active">
-                            <button id="startBtn" class="control-btn">Start Life</button>
-                            <button id="pauseBtn" class="control-btn">Pause</button>
-                            <button id="resetBtn" class="control-btn">Reset</button>
-                            <button id="thanosBtn" class="control-btn special">Thanos Snap</button>
-                        </div>
-                        <div id="about-tab" class="tab-panel">
-                            <div class="about-content">
-                                <h4>How It Works</h4>
-                                <p>Each artificial lifeform has unique DNA that determines its color, behavior, and survival traits. They move, breed, fight, and evolve in real-time based on their genetic code.</p>
-                                
-                                <h4>Life Mechanics</h4>
-                                <ul>
-                                    <li><strong>Breeding:</strong> Compatible lifeforms create offspring with inherited traits</li>
-                                    <li><strong>Combat:</strong> Stronger lifeforms consume weaker ones</li>
-                                    <li><strong>Evolution:</strong> DNA mutations create new characteristics</li>
-                                    <li><strong>Environment:</strong> Gravity and radiation affect survival</li>
-                                </ul>
-                                
-                                <h4>MIDI Integration</h4>
-                                <p>Connect any MIDI controller to control the simulation in real-time:</p>
-                                <ul>
-                                    <li><strong>Knobs:</strong> Adjust radiation, population, mutation rates</li>
-                                    <li><strong>Pads:</strong> Trigger Thanos Snap, spawn lifeforms, toggle gravity</li>
-                                    <li><strong>Faders:</strong> Control environmental parameters live</li>
-                                    <li><strong>Perfect for VJ sets</strong> - responsive visual performance tool</li>
-                                </ul>
+            <div class="tab-container">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="controls">Controls</button>
+                    <button class="tab-btn" data-tab="about">About</button>
+                </div>
+                <div class="tab-content">
+                    <div id="controls-tab" class="tab-panel active">
+                        <div class="controls-grid">
+                            <div class="control-section">
+                                <h3>Life Controls</h3>
+                                <button id="startBtn" class="control-btn">Start Life</button>
+                                <button id="pauseBtn" class="control-btn">Pause</button>
+                                <button id="resetBtn" class="control-btn">Reset</button>
+                                <button id="thanosBtn" class="control-btn special">Thanos Snap</button>
+                            </div>
+                            
+                            <div class="control-section">
+                                <h3>Environment</h3>
+                                <label class="toggle">
+                                    <input type="checkbox" id="gravityToggle">
+                                    <span class="toggle-label">Gravity</span>
+                                </label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="trailsToggle">
+                                    <span class="toggle-label">Trails</span>
+                                </label>
+                            </div>
+                            
+                            <div class="control-section">
+                                <h3>Radiation</h3>
+                                <input type="range" id="radiationSlider" min="0" max="100" value="0" class="slider">
+                                <span id="radiationValue">0</span>
+                            </div>
+                            
+                            <div class="stats-section">
+                                <h3>Statistics</h3>
+                                <div class="stat">Current Lifeforms: <span id="currentCount">0</span></div>
+                                <div class="stat">Total Created: <span id="totalCount">0</span></div>
+                                <div class="stat">Max Concurrent: <span id="maxCount">0</span></div>
                             </div>
                         </div>
                     </div>
+                    <div id="about-tab" class="tab-panel">
+                        <div class="about-content">
+                            <h4>How It Works</h4>
+                            <p>Each artificial lifeform has unique DNA that determines its color, behavior, and survival traits. They move, breed, fight, and evolve in real-time based on their genetic code.</p>
+                            
+                            <h4>Life Mechanics</h4>
+                            <ul>
+                                <li><strong>Breeding:</strong> Compatible lifeforms create offspring with inherited traits</li>
+                                <li><strong>Combat:</strong> Stronger lifeforms consume weaker ones</li>
+                                <li><strong>Evolution:</strong> DNA mutations create new characteristics</li>
+                                <li><strong>Environment:</strong> Gravity and radiation affect survival</li>
+                            </ul>
+                            
+                            <h4>MIDI Integration</h4>
+                            <p>Connect any MIDI controller to control the simulation in real-time:</p>
+                            <ul>
+                                <li><strong>Knobs:</strong> Adjust radiation, population, mutation rates</li>
+                                <li><strong>Pads:</strong> Trigger Thanos Snap, spawn lifeforms, toggle gravity</li>
+                                <li><strong>Faders:</strong> Control environmental parameters live</li>
+                                <li><strong>Perfect for VJ sets</strong> - responsive visual performance tool</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="control-section">
-                <h3>Environment</h3>
-                <label class="toggle">
-                    <input type="checkbox" id="gravityToggle">
-                    <span class="toggle-label">Gravity</span>
-                </label>
-                <label class="toggle">
-                    <input type="checkbox" id="trailsToggle">
-                    <span class="toggle-label">Trails</span>
-                </label>
-            </div>
-            
-            <div class="control-section">
-                <h3>Radiation</h3>
-                <input type="range" id="radiationSlider" min="0" max="100" value="0" class="slider">
-                <span id="radiationValue">0</span>
-            </div>
-            
-            <div class="stats-section">
-                <h3>Statistics</h3>
-                <div class="stat">Current Lifeforms: <span id="currentCount">0</span></div>
-                <div class="stat">Total Created: <span id="totalCount">0</span></div>
-                <div class="stat">Max Concurrent: <span id="maxCount">0</span></div>
             </div>
         </div>
         
