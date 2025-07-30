@@ -107,11 +107,15 @@ class MIDIController {
         const normalizedValue = value / 127; // Convert 0-127 to 0-1
         
         switch(ccNumber) {
-            // Top row knobs (Knob 1-8)
-            case 74: // Knob 1 - Radiation Level
+            // Top row knobs (Knob 1-8) - MiniLab MkII (multiple possible CC numbers)
+            case 74: // Knob 1 - Default mapping
+            case 1:  // Knob 1 - Alternative mapping (mod wheel default)
+            case 16: // Knob 1 - Some firmware versions
+            case 20: // Knob 1 - Some preset configurations
                 this.alife.session.radiation = Math.floor(value * 100 / 127);
                 document.getElementById('radiationSlider').value = this.alife.session.radiation;
                 document.getElementById('radiationValue').textContent = this.alife.session.radiation;
+                console.log(`✅ Radiation set to: ${this.alife.session.radiation} via CC ${ccNumber}`);
                 break;
                 
             case 71: // Knob 2 - Population Limit
@@ -180,8 +184,16 @@ class MIDIController {
                 // Could be used for slow-motion/fast-forward
                 break;
                 
+            // Debug: Log all unmapped CC messages to help with setup
             default:
-                console.log(`Unmapped CC: ${ccNumber}, Value: ${value}`);
+                console.log(`🎛️ Unmapped CC: ${ccNumber}, Value: ${value} - Try mapping this to Knob 1 for radiation`);
+                
+                // Auto-detect if this might be radiation control
+                if (value !== this.lastCCValue || ccNumber !== this.lastCCNumber) {
+                    console.log(`🔍 If this is Knob 1 (Radiation), add 'case ${ccNumber}:' to the radiation control`);
+                }
+                this.lastCCValue = value;
+                this.lastCCNumber = ccNumber;
         }
     }
 
