@@ -161,22 +161,27 @@ class MIDIController {
         switch(note) {
             // Pad Bank A (default)
             case 36: // Pad 1 - Start Life
+                this.flashButton('startBtn');
                 this.alife.startLife();
                 break;
                 
             case 37: // Pad 2 - Pause/Resume
                 if (this.alife.isRunning) {
+                    this.flashButton('pauseBtn');
                     this.alife.pauseLife();
                 } else {
+                    this.flashButton('startBtn');
                     this.alife.startLife();
                 }
                 break;
                 
             case 38: // Pad 3 - Reset Everything
+                this.flashButton('resetBtn');
                 this.alife.resetLife();
                 break;
                 
             case 39: // Pad 4 - Thanos Snap (velocity sensitive)
+                this.flashButton('thanosBtn', velocity > 100 ? 'intense' : 'normal');
                 if (velocity > 100) {
                     // Hard hit = kill 75%
                     this.thanosSnapIntense();
@@ -189,15 +194,18 @@ class MIDIController {
             case 40: // Pad 5 - Toggle Gravity
                 this.alife.session.gravityOn = !this.alife.session.gravityOn;
                 document.getElementById('gravityToggle').checked = this.alife.session.gravityOn;
+                this.flashToggle('gravityToggle');
                 break;
                 
             case 41: // Pad 6 - Toggle Trails
                 this.alife.session.drawTrails = !this.alife.session.drawTrails;
                 document.getElementById('trailsToggle').checked = this.alife.session.drawTrails;
+                this.flashToggle('trailsToggle');
                 break;
                 
             case 42: // Pad 7 - Spawn Burst (velocity sensitive)
                 const spawnCount = Math.floor(velocity / 16) + 1; // 1-8 based on velocity
+                this.showSpawnFeedback(spawnCount);
                 for (let i = 0; i < spawnCount; i++) {
                     this.alife.createLifeform();
                 }
@@ -205,15 +213,18 @@ class MIDIController {
                 
             case 43: // Pad 8 - Population Control (velocity sensitive)
                 const killCount = Math.floor(velocity / 25) + 1; // 1-5 based on velocity
+                this.showKillFeedback(killCount);
                 this.killRandomLifeforms(killCount);
                 break;
                 
             // Keyboard notes for precise control
             case 48: // C2 - Emergency stop
+                this.flashButton('pauseBtn');
                 this.alife.pauseLife();
                 break;
                 
             case 50: // D2 - Radiation burst
+                this.showRadiationBurst();
                 this.radiationBurst();
                 break;
                 
@@ -221,6 +232,7 @@ class MIDIController {
                 break;
                 
             case 53: // F2 - Clear all
+                this.flashButton('resetBtn');
                 this.alife.resetLife();
                 break;
                 
@@ -262,11 +274,88 @@ class MIDIController {
         // Temporary radiation spike
         const originalRadiation = this.alife.session.radiation;
         this.alife.session.radiation = 100;
+        document.getElementById('radiationSlider').value = 100;
+        document.getElementById('radiationValue').textContent = '100';
         
         // Reset after 2 seconds
         setTimeout(() => {
             this.alife.session.radiation = originalRadiation;
+            document.getElementById('radiationSlider').value = originalRadiation;
+            document.getElementById('radiationValue').textContent = originalRadiation.toString();
         }, 2000);
+    }
+
+    // Visual feedback functions
+    flashButton(buttonId, intensity = 'normal') {
+        const button = document.getElementById(buttonId);
+        if (!button) return;
+        
+        // Add flash class based on intensity
+        const flashClass = intensity === 'intense' ? 'midi-flash-intense' : 'midi-flash';
+        button.classList.add(flashClass);
+        
+        // Remove class after animation
+        setTimeout(() => {
+            button.classList.remove(flashClass);
+        }, 300);
+    }
+
+    flashToggle(toggleId) {
+        const toggle = document.getElementById(toggleId);
+        if (!toggle) return;
+        
+        // Flash the parent label
+        const label = toggle.closest('.toggle');
+        if (label) {
+            label.classList.add('midi-flash');
+            setTimeout(() => {
+                label.classList.remove('midi-flash');
+            }, 300);
+        }
+    }
+
+    showSpawnFeedback(count) {
+        // Flash spawn indication
+        this.showTemporaryMessage(`+${count} Lifeforms Spawned!`, 'spawn');
+    }
+
+    showKillFeedback(count) {
+        // Flash kill indication
+        this.showTemporaryMessage(`-${count} Lifeforms Killed!`, 'kill');
+    }
+
+    showRadiationBurst() {
+        // Show radiation burst effect
+        this.showTemporaryMessage('☢️ RADIATION BURST!', 'radiation');
+        
+        // Flash the radiation slider
+        const slider = document.getElementById('radiationSlider');
+        if (slider) {
+            slider.classList.add('midi-flash-intense');
+            setTimeout(() => {
+                slider.classList.remove('midi-flash-intense');
+            }, 2000);
+        }
+    }
+
+    showTemporaryMessage(message, type) {
+        // Create temporary message overlay
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `midi-feedback midi-feedback-${type}`;
+        messageDiv.textContent = message;
+        
+        // Position over canvas
+        const canvasContainer = document.querySelector('.canvas-container');
+        if (canvasContainer) {
+            canvasContainer.appendChild(messageDiv);
+            
+            // Remove after animation
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 1500);
+        }
     }
 
     handleNoteOff(note) {

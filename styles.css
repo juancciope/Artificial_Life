@@ -388,6 +388,164 @@ header {
     text-decoration: underline;
 }
 
+/* MIDI Visual Feedback Animations */
+.midi-flash {
+    animation: midi-button-flash 0.3s ease-out;
+}
+
+.midi-flash-intense {
+    animation: midi-button-flash-intense 0.5s ease-out;
+}
+
+@keyframes midi-button-flash {
+    0% { 
+        background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+    }
+    50% { 
+        background: linear-gradient(135deg, var(--primary-red), var(--bright-red));
+        transform: scale(1.05);
+        box-shadow: 0 4px 20px rgba(255, 0, 0, 0.8);
+    }
+    100% { 
+        background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+    }
+}
+
+@keyframes midi-button-flash-intense {
+    0% { 
+        background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+    }
+    25% { 
+        background: linear-gradient(135deg, var(--primary-red), var(--bright-red));
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(255, 0, 0, 1);
+    }
+    50% { 
+        background: linear-gradient(135deg, var(--bright-red), #FF6666);
+        transform: scale(1.05);
+        box-shadow: 0 8px 30px rgba(255, 0, 0, 0.9);
+    }
+    100% { 
+        background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+    }
+}
+
+/* MIDI Feedback Messages */
+.midi-feedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    font-size: 1.2rem;
+    z-index: 1000;
+    pointer-events: none;
+    animation: midi-feedback-animation 1.5s ease-out forwards;
+    border: 2px solid var(--primary-red);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.midi-feedback-spawn {
+    color: var(--bright-red);
+    border-color: var(--bright-red);
+}
+
+.midi-feedback-kill {
+    color: var(--dark-red);
+    border-color: var(--dark-red);
+}
+
+.midi-feedback-radiation {
+    color: #FFD700;
+    border-color: #FFD700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    animation: radiation-feedback-animation 2s ease-out forwards;
+}
+
+@keyframes midi-feedback-animation {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+}
+
+@keyframes radiation-feedback-animation {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    90% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
+
+/* Toggle flash animation */
+.toggle.midi-flash {
+    animation: toggle-flash 0.3s ease-out;
+}
+
+@keyframes toggle-flash {
+    0% { 
+        background: transparent; 
+    }
+    50% { 
+        background: rgba(255, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+    100% { 
+        background: transparent; 
+    }
+}
+
+/* Slider flash animation */
+.slider.midi-flash-intense {
+    animation: slider-flash 2s ease-out;
+}
+
+@keyframes slider-flash {
+    0%, 100% { 
+        background: linear-gradient(to right, var(--deep-black), var(--dark-red), var(--primary-red));
+    }
+    50% { 
+        background: linear-gradient(to right, #FFD700, #FF8C00, var(--primary-red));
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+    }
+}
+
 @media (max-width: 768px) {
     .glitch {
         font-size: 2.5rem;
@@ -395,5 +553,10 @@ header {
     
     .controls-panel {
         grid-template-columns: 1fr;
+    }
+    
+    .midi-feedback {
+        font-size: 1rem;
+        padding: 10px 20px;
     }
 }
