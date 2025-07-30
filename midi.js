@@ -103,6 +103,9 @@ class MIDIController {
     }
 
     handleControlChange(ccNumber, value) {
+        // Debug: Log ALL CC messages to identify Knob 1
+        console.log(`🎛️ MIDI CC: ${ccNumber}, Value: ${value}`);
+        
         // Arturia MiniLab MkII specific mappings
         const normalizedValue = value / 127; // Convert 0-127 to 0-1
         
@@ -184,14 +187,19 @@ class MIDIController {
                 // Could be used for slow-motion/fast-forward
                 break;
                 
-            // Debug: Log all unmapped CC messages to help with setup
+            // TEMPORARY: Auto-map any unmapped CC to radiation for debugging
+            // Remove this after we find the correct CC number
             default:
-                console.log(`🎛️ Unmapped CC: ${ccNumber}, Value: ${value} - Try mapping this to Knob 1 for radiation`);
+                console.log(`⚠️ UNMAPPED CC ${ccNumber} = ${value} - TEMPORARILY MAPPING TO RADIATION`);
+                console.log(`🔧 Turn ONLY Knob 1 (leftmost top knob) to identify the correct CC number`);
                 
-                // Auto-detect if this might be radiation control
-                if (value !== this.lastCCValue || ccNumber !== this.lastCCNumber) {
-                    console.log(`🔍 If this is Knob 1 (Radiation), add 'case ${ccNumber}:' to the radiation control`);
-                }
+                // Temporarily map ANY unmapped CC to radiation
+                this.alife.session.radiation = Math.floor(value * 100 / 127);
+                document.getElementById('radiationSlider').value = this.alife.session.radiation;
+                document.getElementById('radiationValue').textContent = this.alife.session.radiation;
+                console.log(`🧪 TEMP: Radiation set to ${this.alife.session.radiation} via CC ${ccNumber}`);
+                console.log(`📝 Add 'case ${ccNumber}:' to the radiation control permanently`);
+                
                 this.lastCCValue = value;
                 this.lastCCNumber = ccNumber;
         }
