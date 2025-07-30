@@ -330,14 +330,14 @@ class ArtificialLife {
             const x = lifeform.x * this.cellSize;
             const y = lifeform.y * this.cellSize;
             
-            // Create vibrant festival colors
-            const hue = (lifeform.redColor * 360) % 360;
-            const saturation = 100;
-            const lightness = 50 + (lifeform.blueColor * 30);
+            // Create elegant red color variations
+            const redIntensity = 150 + (lifeform.redColor * 105); // 150-255
+            const greenComponent = Math.floor(lifeform.greenColor * 50); // 0-50
+            const blueComponent = Math.floor(lifeform.blueColor * 30); // 0-30
             
-            this.ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            this.ctx.shadowColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            this.ctx.shadowBlur = 10;
+            this.ctx.fillStyle = `rgb(${redIntensity}, ${greenComponent}, ${blueComponent})`;
+            this.ctx.shadowColor = `rgb(${redIntensity}, ${greenComponent}, ${blueComponent})`;
+            this.ctx.shadowBlur = 8;
             
             this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
         }
