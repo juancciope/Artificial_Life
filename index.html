@@ -49,6 +49,25 @@
                                 <span id="radiationValue">0</span>
                             </div>
                             
+                            <div class="control-section">
+                                <h3>Audio System</h3>
+                                <button id="audioToggle" class="control-btn">Enable Audio</button>
+                                <div class="audio-controls">
+                                    <label class="volume-control">
+                                        <span>Music:</span>
+                                        <input type="range" id="musicVolume" min="0" max="100" value="80" class="volume-slider">
+                                    </label>
+                                    <label class="volume-control">
+                                        <span>SFX:</span>
+                                        <input type="range" id="sfxVolume" min="0" max="100" value="60" class="volume-slider">
+                                    </label>
+                                    <label class="volume-control">
+                                        <span>Ambient:</span>
+                                        <input type="range" id="ambientVolume" min="0" max="100" value="30" class="volume-slider">
+                                    </label>
+                                </div>
+                            </div>
+                            
                             <div class="stats-section">
                                 <h3>Statistics</h3>
                                 <div class="stat">Current Lifeforms: <span id="currentCount">0</span></div>
@@ -104,6 +123,32 @@
                                 <li><strong>Mod Wheel:</strong> Chaos Mode (High = Extreme mutations)</li>
                                 <li><strong>Keys C2/D2/F2:</strong> Emergency Stop/Radiation Burst/Clear All</li>
                             </ul>
+                            
+                            <h4>Audio + Music Performance</h4>
+                            <p>Revolutionary dual-channel system for simultaneous music and visual control:</p>
+                            
+                            <h5>Music Channels (1-8):</h5>
+                            <ul>
+                                <li><strong>Play music normally</strong> - notes trigger sounds + spawn lifeforms</li>
+                                <li><strong>Channel 1:</strong> Sine waves, Channel 2: Triangle, etc.</li>
+                                <li><strong>Velocity-sensitive:</strong> Harder hits = more lifeforms spawn</li>
+                                <li><strong>Filter control:</strong> CC messages shape the sound</li>
+                            </ul>
+                            
+                            <h5>Control Channels (9+):</h5>
+                            <ul>
+                                <li><strong>All existing controls</strong> work as before</li>
+                                <li><strong>Audio effects:</strong> Thanos Snap = doom chord, Radiation = Geiger sounds</li>
+                                <li><strong>Ambient soundscape:</strong> Evolves with lifeform population</li>
+                            </ul>
+                            
+                            <h5>Perfect for Live Performance:</h5>
+                            <ul>
+                                <li><strong>Play melodies</strong> while controlling the simulation</li>
+                                <li><strong>Visual-audio sync:</strong> Music creates lifeforms in real-time</li>
+                                <li><strong>Atmospheric sounds</strong> respond to artificial life activity</li>
+                                <li><strong>Festival-ready:</strong> Complete audiovisual experience</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -124,6 +169,7 @@
         </footer>
     </div>
     
+    <script src="audio.js"></script>
     <script src="midi.js"></script>
     <script src="alife.js"></script>
 </body>

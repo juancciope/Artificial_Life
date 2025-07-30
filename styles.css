@@ -196,6 +196,46 @@ header {
     color: var(--bright-red);
 }
 
+/* Audio Controls */
+.audio-controls {
+    margin-top: 15px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.volume-control span {
+    min-width: 60px;
+}
+
+.volume-slider {
+    width: 100px;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--deep-black), var(--dark-red), var(--primary-red));
+    outline: none;
+    -webkit-appearance: none;
+    border: 1px solid var(--light-gray);
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 1px;
+    background: var(--primary-red);
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+    border: 1px solid var(--bright-red);
+}
+
 .control-section h3 {
     color: var(--primary-red);
     margin-bottom: 15px;

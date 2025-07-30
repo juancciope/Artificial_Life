@@ -54,9 +54,19 @@ class MIDIController {
 
     handleMIDIMessage(message) {
         const [status, data1, data2] = message.data;
-        const channel = status & 0x0F;
+        const channel = (status & 0x0F) + 1;
         const command = status & 0xF0;
 
+        // Route MIDI based on channel for music + control
+        if (this.alife.audioSystem) {
+            // Channels 1-8: Music performance
+            if (channel <= 8) {
+                this.alife.audioSystem.handleMIDIMessage(message);
+                return; // Don't process as control messages
+            }
+        }
+
+        // Channels 9+: ALife control (existing functionality)
         // Control Change (CC) messages - for knobs and faders
         if (command === 0xB0) {
             this.handleControlChange(data1, data2);
@@ -65,11 +75,30 @@ class MIDIController {
         // Note On messages - for pads and keys
         else if (command === 0x90 && data2 > 0) {
             this.handleNoteOn(data1, data2);
+            
+            // Trigger audio effects
+            if (this.alife.audioSystem) {
+                this.triggerControlAudio(data1, data2);
+            }
         }
         
         // Note Off messages
         else if (command === 0x80 || (command === 0x90 && data2 === 0)) {
             this.handleNoteOff(data1);
+        }
+    }
+
+    triggerControlAudio(note, velocity) {
+        if (!this.alife.audioSystem) return;
+
+        switch(note) {
+            case 39: // Thanos Snap
+                const intensity = velocity > 100 ? 'intense' : 'normal';
+                this.alife.audioSystem.playThanosSfx(intensity);
+                break;
+            case 50: // Radiation burst
+                this.alife.audioSystem.playRadiationBurstSfx();
+                break;
         }
     }
 

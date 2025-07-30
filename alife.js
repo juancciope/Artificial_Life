@@ -33,6 +33,7 @@ class ArtificialLife {
         
         this.initializeControls();
         this.initializeMIDI();
+        this.initializeAudio();
         this.startLife();
     }
     
@@ -63,12 +64,46 @@ class ArtificialLife {
             this.session.radiation = parseInt(e.target.value);
             document.getElementById('radiationValue').textContent = e.target.value;
         });
+        
+        // Audio controls
+        document.getElementById('audioToggle').addEventListener('click', () => {
+            if (this.audioSystem) {
+                this.audioSystem.toggle();
+                const btn = document.getElementById('audioToggle');
+                btn.textContent = this.audioSystem.isEnabled ? 'Disable Audio' : 'Enable Audio';
+            }
+        });
+        
+        document.getElementById('musicVolume').addEventListener('input', (e) => {
+            if (this.audioSystem) {
+                this.audioSystem.setMusicVolume(parseInt(e.target.value) / 100);
+            }
+        });
+        
+        document.getElementById('sfxVolume').addEventListener('input', (e) => {
+            if (this.audioSystem) {
+                this.audioSystem.setSfxVolume(parseInt(e.target.value) / 100);
+            }
+        });
+        
+        document.getElementById('ambientVolume').addEventListener('input', (e) => {
+            if (this.audioSystem) {
+                this.audioSystem.setAmbientVolume(parseInt(e.target.value) / 100);
+            }
+        });
     }
     
     initializeMIDI() {
         // Initialize MIDI controller if available
         if (typeof MIDIController !== 'undefined') {
             this.midiController = new MIDIController(this);
+        }
+    }
+    
+    initializeAudio() {
+        // Initialize audio system if available
+        if (typeof ALifeAudioSystem !== 'undefined') {
+            this.audioSystem = new ALifeAudioSystem(this);
         }
     }
     
