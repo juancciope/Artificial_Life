@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artificial Life - Festival Edition</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="glitch" data-text="ARTIFICIAL LIFE">ARTIFICIAL LIFE</h1>
+            <p class="subtitle">Festival Edition • Halloween 2024</p>
+        </header>
+        
+        <div class="controls-panel">
+            <div class="control-section">
+                <h3>Life Controls</h3>
+                <button id="startBtn" class="control-btn">Start Life</button>
+                <button id="pauseBtn" class="control-btn">Pause</button>
+                <button id="resetBtn" class="control-btn">Reset</button>
+                <button id="thanosBtn" class="control-btn special">Thanos Snap</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>Environment</h3>
+                <label class="toggle">
+                    <input type="checkbox" id="gravityToggle">
+                    <span class="toggle-label">Gravity</span>
+                </label>
+                <label class="toggle">
+                    <input type="checkbox" id="trailsToggle">
+                    <span class="toggle-label">Trails</span>
+                </label>
+            </div>
+            
+            <div class="control-section">
+                <h3>Radiation</h3>
+                <input type="range" id="radiationSlider" min="0" max="100" value="0" class="slider">
+                <span id="radiationValue">0</span>
+            </div>
+            
+            <div class="stats-section">
+                <h3>Statistics</h3>
+                <div class="stat">Current Lifeforms: <span id="currentCount">0</span></div>
+                <div class="stat">Total Created: <span id="totalCount">0</span></div>
+                <div class="stat">Max Concurrent: <span id="maxCount">0</span></div>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="lifeCanvas"></canvas>
+            <div class="overlay-effects"></div>
+        </div>
+        
+        <div class="midi-ready">
+            <p>🎹 MIDI Ready • Connect your controller for interactive control</p>
+        </div>
+    </div>
+    
+    <script src="alife.js"></script>
+</body>
+</html>
