@@ -103,6 +103,84 @@ header {
     padding: 15px;
 }
 
+.tab-container {
+    width: 100%;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid var(--light-gray);
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 10px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    color: #999;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    color: var(--primary-red);
+    border-bottom-color: var(--primary-red);
+}
+
+.tab-btn:hover {
+    color: var(--bright-red);
+}
+
+.tab-content {
+    width: 100%;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.about-content {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #ccc;
+}
+
+.about-content h4 {
+    color: var(--primary-red);
+    margin: 15px 0 8px 0;
+    font-size: 0.95rem;
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+}
+
+.about-content h4:first-child {
+    margin-top: 0;
+}
+
+.about-content p {
+    margin: 8px 0;
+}
+
+.about-content ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.about-content li {
+    margin: 5px 0;
+}
+
+.about-content strong {
+    color: var(--bright-red);
+}
+
 .control-section h3 {
     color: var(--primary-red);
     margin-bottom: 15px;

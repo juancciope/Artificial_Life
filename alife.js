@@ -36,6 +36,15 @@ class ArtificialLife {
     }
     
     initializeControls() {
+        // Tab functionality
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.getAttribute('data-tab');
+                this.switchTab(tabName);
+            });
+        });
+        
+        // Control buttons
         document.getElementById('startBtn').addEventListener('click', () => this.startLife());
         document.getElementById('pauseBtn').addEventListener('click', () => this.pauseLife());
         document.getElementById('resetBtn').addEventListener('click', () => this.resetLife());
@@ -53,6 +62,16 @@ class ArtificialLife {
             this.session.radiation = parseInt(e.target.value);
             document.getElementById('radiationValue').textContent = e.target.value;
         });
+    }
+    
+    switchTab(tabName) {
+        // Remove active class from all tabs and panels
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding panel
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        document.getElementById(`${tabName}-tab`).classList.add('active');
     }
     
     startLife() {
