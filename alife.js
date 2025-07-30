@@ -321,7 +321,7 @@ class ArtificialLife {
     
     render() {
         if (!this.session.drawTrails) {
-            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            this.ctx.fillStyle = '#000000';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
         

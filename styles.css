@@ -221,7 +221,7 @@ header {
 #lifeCanvas {
     display: block;
     width: 100%;
-    background: #000;
+    background: #000000;
     image-rendering: pixelated;
 }
 
