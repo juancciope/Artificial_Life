@@ -9,20 +9,21 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1 class="glitch" data-text="ARTIFICIAL LIFE">ARTIFICIAL LIFE</h1>
-            <p class="subtitle">Halloween 2025</p>
-        </header>
-        
-        <div class="controls-panel">
-            <div class="tab-container">
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="controls">Controls</button>
-                    <button class="tab-btn" data-tab="about">About</button>
-                </div>
-                <div class="tab-content">
-                    <div id="controls-tab" class="tab-panel active">
-                        <div class="controls-grid">
+        <!-- Left Sidebar Menu -->
+        <div class="sidebar">
+            <header class="sidebar-header">
+                <h1 class="sidebar-title">ARTIFICIAL LIFE</h1>
+                <p class="sidebar-subtitle">Halloween 2025</p>
+            </header>
+            
+            <div class="controls-panel">
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="controls">Controls</button>
+                        <button class="tab-btn" data-tab="about">About</button>
+                    </div>
+                    <div class="tab-content">
+                        <div id="controls-tab" class="tab-panel active">
                             <div class="control-section">
                                 <h3>Life Controls</h3>
                                 <button id="startBtn" class="control-btn">Start Life</button>
@@ -70,103 +71,108 @@
                             
                             <div class="stats-section">
                                 <h3>Statistics</h3>
-                                <div class="stat">Current Lifeforms: <span id="currentCount">0</span></div>
-                                <div class="stat">Total Created: <span id="totalCount">0</span></div>
-                                <div class="stat">Max Concurrent: <span id="maxCount">0</span></div>
+                                <div class="stat">Current: <span id="currentCount">0</span></div>
+                                <div class="stat">Total: <span id="totalCount">0</span></div>
+                                <div class="stat">Max: <span id="maxCount">0</span></div>
+                            </div>
+                        </div>
+                        <div id="about-tab" class="tab-panel">
+                            <div class="about-content">
+                                <h4>How It Works</h4>
+                                <p>Each artificial lifeform has unique DNA that determines its appearance (red variations with subtle gradients), behavior patterns, and survival traits. They move, breed, fight, and evolve in real-time based on their genetic code.</p>
+                                
+                                <h4>Life Mechanics</h4>
+                                <ul>
+                                    <li><strong>Breeding:</strong> Compatible lifeforms create offspring with inherited traits</li>
+                                    <li><strong>Combat:</strong> Stronger lifeforms consume weaker ones</li>
+                                    <li><strong>Evolution:</strong> DNA mutations create new characteristics</li>
+                                    <li><strong>Gravity:</strong> When enabled, lifeforms fall downward like particles</li>
+                                    <li><strong>Radiation:</strong> Higher levels increase mutation rates and reduce lifespan</li>
+                                    <li><strong>Thanos Snap:</strong> Instantly removes half of all lifeforms for dramatic population control</li>
+                                </ul>
+                                
+                                <h4>MIDI Integration - Arturia MiniLab MkII</h4>
+                                <p>Optimized for the MiniLab MkII - connect via USB for live performance control:</p>
+                                
+                                <h5>Top Row Knobs (1-8):</h5>
+                                <ul>
+                                    <li><strong>Knob 1:</strong> Radiation Level (0-100) <em>*Check browser console if not working</em></li>
+                                    <li><strong>Knob 2:</strong> Population Limit (20-100)</li>
+                                    <li><strong>Knob 3:</strong> DNA Chaos Chance (0-50%)</li>
+                                    <li><strong>Knob 4:</strong> Grid Size (32-64)</li>
+                                    <li><strong>Knob 5:</strong> Cell Size (4-16px)</li>
+                                    <li><strong>Knob 6:</strong> Animation Speed</li>
+                                    <li><strong>Knob 7:</strong> Auto Spawn Rate</li>
+                                    <li><strong>Knob 8:</strong> Visual Intensity</li>
+                                </ul>
+                                
+                                <h5>Velocity-Sensitive Pads (1-8):</h5>
+                                <ul>
+                                    <li><strong>Pad 1:</strong> Start Life</li>
+                                    <li><strong>Pad 2:</strong> Pause/Resume (Smart Toggle)</li>
+                                    <li><strong>Pad 3:</strong> Reset Everything</li>
+                                    <li><strong>Pad 4:</strong> Thanos Snap (Soft=50%, Hard=75%)</li>
+                                    <li><strong>Pad 5:</strong> Toggle Gravity</li>
+                                    <li><strong>Pad 6:</strong> Toggle Trails</li>
+                                    <li><strong>Pad 7:</strong> Spawn Burst (Velocity = Count)</li>
+                                    <li><strong>Pad 8:</strong> Kill Random (Velocity = Count)</li>
+                                </ul>
+                                
+                                <h5>Performance Controls:</h5>
+                                <ul>
+                                    <li><strong>Mod Wheel:</strong> Chaos Mode (High = Extreme mutations)</li>
+                                    <li><strong>Keys C2/D2/F2:</strong> Emergency Stop/Radiation Burst/Clear All</li>
+                                </ul>
+                                
+                                <h4>Audio + Music Performance</h4>
+                                <p>Revolutionary dual-channel system for simultaneous music and visual control:</p>
+                                
+                                <h5>Music Channels (1-8):</h5>
+                                <ul>
+                                    <li><strong>Play music normally</strong> - notes trigger sounds + spawn lifeforms</li>
+                                    <li><strong>Channel 1:</strong> Sine waves, Channel 2: Triangle, etc.</li>
+                                    <li><strong>Velocity-sensitive:</strong> Harder hits = more lifeforms spawn</li>
+                                    <li><strong>Filter control:</strong> CC messages shape the sound</li>
+                                </ul>
+                                
+                                <h5>Control Channels (9+):</h5>
+                                <ul>
+                                    <li><strong>All existing controls</strong> work as before</li>
+                                    <li><strong>Audio effects:</strong> Thanos Snap = doom chord, Radiation = Geiger sounds</li>
+                                    <li><strong>Ambient soundscape:</strong> Evolves with lifeform population</li>
+                                </ul>
+                                
+                                <h5>Perfect for Live Performance:</h5>
+                                <ul>
+                                    <li><strong>Play melodies</strong> while controlling the simulation</li>
+                                    <li><strong>Visual-audio sync:</strong> Music creates lifeforms in real-time</li>
+                                    <li><strong>Atmospheric sounds</strong> respond to artificial life activity</li>
+                                    <li><strong>Festival-ready:</strong> Complete audiovisual experience</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                    <div id="about-tab" class="tab-panel">
-                        <div class="about-content">
-                            <h4>How It Works</h4>
-                            <p>Each artificial lifeform has unique DNA that determines its appearance (red variations with subtle gradients), behavior patterns, and survival traits. They move, breed, fight, and evolve in real-time based on their genetic code.</p>
-                            
-                            <h4>Life Mechanics</h4>
-                            <ul>
-                                <li><strong>Breeding:</strong> Compatible lifeforms create offspring with inherited traits</li>
-                                <li><strong>Combat:</strong> Stronger lifeforms consume weaker ones</li>
-                                <li><strong>Evolution:</strong> DNA mutations create new characteristics</li>
-                                <li><strong>Gravity:</strong> When enabled, lifeforms fall downward like particles</li>
-                                <li><strong>Radiation:</strong> Higher levels increase mutation rates and reduce lifespan</li>
-                                <li><strong>Thanos Snap:</strong> Instantly removes half of all lifeforms for dramatic population control</li>
-                            </ul>
-                            
-                            <h4>MIDI Integration - Arturia MiniLab MkII</h4>
-                            <p>Optimized for the MiniLab MkII - connect via USB for live performance control:</p>
-                            
-                            <h5>Top Row Knobs (1-8):</h5>
-                            <ul>
-                                <li><strong>Knob 1:</strong> Radiation Level (0-100) <em>*Check browser console if not working</em></li>
-                                <li><strong>Knob 2:</strong> Population Limit (20-100)</li>
-                                <li><strong>Knob 3:</strong> DNA Chaos Chance (0-50%)</li>
-                                <li><strong>Knob 4:</strong> Grid Size (32-64)</li>
-                                <li><strong>Knob 5:</strong> Cell Size (4-16px)</li>
-                                <li><strong>Knob 6:</strong> Animation Speed</li>
-                                <li><strong>Knob 7:</strong> Auto Spawn Rate</li>
-                                <li><strong>Knob 8:</strong> Visual Intensity</li>
-                            </ul>
-                            
-                            <h5>Velocity-Sensitive Pads (1-8):</h5>
-                            <ul>
-                                <li><strong>Pad 1:</strong> Start Life</li>
-                                <li><strong>Pad 2:</strong> Pause/Resume (Smart Toggle)</li>
-                                <li><strong>Pad 3:</strong> Reset Everything</li>
-                                <li><strong>Pad 4:</strong> Thanos Snap (Soft=50%, Hard=75%)</li>
-                                <li><strong>Pad 5:</strong> Toggle Gravity</li>
-                                <li><strong>Pad 6:</strong> Toggle Trails</li>
-                                <li><strong>Pad 7:</strong> Spawn Burst (Velocity = Count)</li>
-                                <li><strong>Pad 8:</strong> Kill Random (Velocity = Count)</li>
-                            </ul>
-                            
-                            <h5>Performance Controls:</h5>
-                            <ul>
-                                <li><strong>Mod Wheel:</strong> Chaos Mode (High = Extreme mutations)</li>
-                                <li><strong>Keys C2/D2/F2:</strong> Emergency Stop/Radiation Burst/Clear All</li>
-                            </ul>
-                            
-                            <h4>Audio + Music Performance</h4>
-                            <p>Revolutionary dual-channel system for simultaneous music and visual control:</p>
-                            
-                            <h5>Music Channels (1-8):</h5>
-                            <ul>
-                                <li><strong>Play music normally</strong> - notes trigger sounds + spawn lifeforms</li>
-                                <li><strong>Channel 1:</strong> Sine waves, Channel 2: Triangle, etc.</li>
-                                <li><strong>Velocity-sensitive:</strong> Harder hits = more lifeforms spawn</li>
-                                <li><strong>Filter control:</strong> CC messages shape the sound</li>
-                            </ul>
-                            
-                            <h5>Control Channels (9+):</h5>
-                            <ul>
-                                <li><strong>All existing controls</strong> work as before</li>
-                                <li><strong>Audio effects:</strong> Thanos Snap = doom chord, Radiation = Geiger sounds</li>
-                                <li><strong>Ambient soundscape:</strong> Evolves with lifeform population</li>
-                            </ul>
-                            
-                            <h5>Perfect for Live Performance:</h5>
-                            <ul>
-                                <li><strong>Play melodies</strong> while controlling the simulation</li>
-                                <li><strong>Visual-audio sync:</strong> Music creates lifeforms in real-time</li>
-                                <li><strong>Atmospheric sounds</strong> respond to artificial life activity</li>
-                                <li><strong>Festival-ready:</strong> Complete audiovisual experience</li>
-                            </ul>
-                        </div>
+                </div>
+                
+                <div class="midi-status">
+                    <div class="midi-ready">
+                        <p>🎹 MIDI Ready</p>
                     </div>
                 </div>
+                
+                <footer class="sidebar-footer">
+                    <p>Created with ❤️ by <a href="https://github.com/juancciope" target="_blank" rel="noopener noreferrer">juancciope</a></p>
+                </footer>
             </div>
         </div>
         
-        <div class="canvas-container">
-            <canvas id="lifeCanvas"></canvas>
-            <div class="overlay-effects"></div>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="lifeCanvas"></canvas>
+                <div class="overlay-effects"></div>
+            </div>
         </div>
-        
-        <div class="midi-ready">
-            <p>🎹 MIDI Ready • Connect your controller for interactive control</p>
-        </div>
-        
-        <footer class="footer-banner">
-            <p>Created with ❤️ by <a href="https://github.com/juancciope" target="_blank" rel="noopener noreferrer">juancciope</a></p>
-        </footer>
     </div>
     
     <script src="audio.js"></script>
