@@ -22,6 +22,11 @@ class MIDIController {
             
             this.updateMIDIStatus('MIDI Ready - Connect your controller!');
             
+            // Run connectivity test after 1 second
+            setTimeout(() => {
+                this.testMIDIConnectivity();
+            }, 1000);
+            
         } catch (error) {
             console.warn('MIDI not supported or access denied:', error);
             this.updateMIDIStatus('MIDI not available - browser or device limitation');
@@ -29,13 +34,30 @@ class MIDIController {
     }
 
     connectMIDIDevice(input) {
-        console.log(`Connected to MIDI device: ${input.name}`);
+        console.log(`🔌 Connected to MIDI device: ${input.name} (ID: ${input.id})`);
         this.connectedDevices.set(input.id, input);
+        
+        // Detect MicroLab Smart specifically
+        if (input.name.toLowerCase().includes('microlab')) {
+            console.log('🎹 MicroLab Smart detected! Optimized controls activated.');
+            console.log('💡 Use Mod Wheel for Radiation, Pitch Bend for Speed');
+            console.log('💡 C1-G1: Basic controls, C2-G2: Advanced, C3+: Musical performance');
+        }
         
         // Set up message handler
         input.onmidimessage = (message) => this.handleMIDIMessage(message);
         
         this.updateMIDIStatus(`🎹 Connected: ${input.name}`);
+        
+        // Provide audio instructions (user must manually enable due to browser policies)
+        if (this.alife.audioSystem) {
+            if (!this.alife.audioSystem.isEnabled) {
+                console.log('🔊 IMPORTANT: Click "Enable Audio" button to hear sounds!');
+                console.log('🔊 Browser autoplay policy requires user interaction to start audio');
+            } else {
+                console.log('🔊 Audio system is enabled and ready!');
+            }
+        }
     }
 
     onMIDIStateChange(event) {
@@ -57,26 +79,36 @@ class MIDIController {
         const channel = (status & 0x0F) + 1;
         const command = status & 0xF0;
 
+        console.log(`🎛️ MIDI Input: Status=${status}, Data1=${data1}, Data2=${data2}, Channel=${channel}, Command=${command.toString(16)}`);
+
+        // Handle Pitch Bend (special case - different status byte)
+        if (command === 0xE0) {
+            this.handlePitchBend(data1, data2);
+            return;
+        }
+
         // Route MIDI based on channel for music + control
         if (this.alife.audioSystem) {
-            // Channels 1-8: Music performance
+            // For MicroLab: Allow all channels to trigger audio AND control
+            // This enables musical performance while controlling ALife
             if (channel <= 8) {
+                console.log(`🎵 Routing to audio system: Channel ${channel}`);
                 this.alife.audioSystem.handleMIDIMessage(message);
-                return; // Don't process as control messages
+                // Don't return - also process as control messages for MicroLab
             }
         }
 
-        // Channels 9+: ALife control (existing functionality)
-        // Control Change (CC) messages - for knobs and faders
+        // Control Change (CC) messages - for knobs, mod wheel, etc.
         if (command === 0xB0) {
             this.handleControlChange(data1, data2);
         }
         
-        // Note On messages - for pads and keys
+        // Note On messages - for keyboard and pads
         else if (command === 0x90 && data2 > 0) {
+            console.log(`🎹 Note ON: ${data1} (${this.getNoteNameFromMIDI(data1)}), Velocity: ${data2}`);
             this.handleNoteOn(data1, data2);
             
-            // Trigger audio effects
+            // Trigger audio effects for control functions
             if (this.alife.audioSystem) {
                 this.triggerControlAudio(data1, data2);
             }
@@ -84,6 +116,7 @@ class MIDIController {
         
         // Note Off messages
         else if (command === 0x80 || (command === 0x90 && data2 === 0)) {
+            console.log(`🎹 Note OFF: ${data1} (${this.getNoteNameFromMIDI(data1)})`);
             this.handleNoteOff(data1);
         }
     }
@@ -102,6 +135,13 @@ class MIDIController {
         }
     }
 
+    handlePitchBend(lsb, msb) {
+        // Pitch bend uses 14-bit resolution (0-16383), but we'll simplify to 0-127
+        const value = msb; // Use MSB for simpler control
+        this.alife.frameDelay = Math.floor(5 + (value * 95 / 127)); // 5-100ms delay
+        console.log(`⏱️ Animation speed set via Pitch Bend: ${this.alife.frameDelay}ms delay (value: ${value})`);
+    }
+
     handleControlChange(ccNumber, value) {
         // Debug: Log ALL CC messages to identify controls
         console.log(`🎛️ MIDI CC: ${ccNumber}, Value: ${value}`);
@@ -117,13 +157,6 @@ class MIDIController {
                 document.getElementById('radiationSlider').value = this.alife.session.radiation;
                 document.getElementById('radiationValue').textContent = this.alife.session.radiation;
                 console.log(`☢️ Radiation set to: ${this.alife.session.radiation} via Mod Wheel`);
-                break;
-                
-            // Pitch Bend (CC 224) - Time Control / Animation Speed
-            case 224: // Pitch bend - Animation Speed
-                // Convert pitch bend (0-127) to frame delay
-                this.alife.frameDelay = Math.floor(5 + (value * 95 / 127)); // 5-100ms delay
-                console.log(`⏱️ Animation speed set via Pitch Bend: ${this.alife.frameDelay}ms delay`);
                 break;
                 
             // === LEGACY MINILAB MKII SUPPORT (for users who have it) ===
@@ -493,6 +526,28 @@ class MIDIController {
         if (statusElement) {
             statusElement.textContent = message;
         }
+    }
+
+    // Test function to verify MIDI connectivity
+    testMIDIConnectivity() {
+        console.log('🧪 MIDI Connectivity Test:');
+        console.log(`- MIDI Access: ${this.midiAccess ? '✅ Available' : '❌ Not available'}`);
+        console.log(`- Connected Devices: ${this.connectedDevices.size}`);
+        
+        if (this.connectedDevices.size > 0) {
+            for (let [id, device] of this.connectedDevices) {
+                console.log(`  📱 ${device.name} (${id})`);
+            }
+        }
+        
+        if (this.alife.audioSystem) {
+            console.log(`- Audio System: ${this.alife.audioSystem.isEnabled ? '✅ Enabled' : '❌ Disabled - Click "Enable Audio"'}`);
+            console.log(`- Audio Context State: ${this.alife.audioSystem.audioContext?.state || 'Not initialized'}`);
+        } else {
+            console.log('- Audio System: ❌ Not initialized');
+        }
+        
+        console.log('💡 Play any key on your MicroLab to test MIDI input...');
     }
 
     // Method to get MIDI mapping info for both MicroLab and MiniLab MkII
