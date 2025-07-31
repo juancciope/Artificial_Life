@@ -69,6 +69,30 @@
                                 </div>
                             </div>
                             
+                            <div class="control-section">
+                                <h3>Audio Input</h3>
+                                <button id="audioInputToggle" class="control-btn">Enable Audio Input</button>
+                                <div class="audio-input-controls">
+                                    <label class="volume-control">
+                                        <span>Sensitivity:</span>
+                                        <input type="range" id="audioSensitivity" min="0.1" max="2.0" step="0.1" value="0.7" class="volume-slider">
+                                    </label>
+                                    <label class="volume-control">
+                                        <span>Pitch Response:</span>
+                                        <input type="range" id="pitchSensitivity" min="0.1" max="2.0" step="0.1" value="0.5" class="volume-slider">
+                                    </label>
+                                    <div class="audio-status">
+                                        <span class="audio-input-status">Audio input ready</span>
+                                    </div>
+                                    <div class="audio-visualization">
+                                        <div class="volume-meter">
+                                            <div class="volume-bar" id="volumeBar"></div>
+                                        </div>
+                                        <div class="frequency-display" id="frequencyDisplay">No signal</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="stats-section">
                                 <h3>Statistics</h3>
                                 <div class="stat">Current: <span id="currentCount">0</span></div>
@@ -114,30 +138,35 @@
                                     <li><strong>Mod Wheel:</strong> Radiation control (same as MicroLab)</li>
                                 </ul>
                                 
-                                <h4>Audio + Music Performance</h4>
-                                <p>Revolutionary dual-channel system for simultaneous music and visual control:</p>
+                                <h4>🎵 Audio Input - Instrument Control</h4>
+                                <p>Connect any audio instrument directly! Guitar, microphone, synth, or audio interface:</p>
                                 
-                                <h5>Music Channels (1-8):</h5>
+                                <h5>🎸 Audio Analysis Features:</h5>
                                 <ul>
-                                    <li><strong>Play music normally</strong> - notes trigger sounds + spawn lifeforms</li>
-                                    <li><strong>Channel 1:</strong> Sine waves, Channel 2: Triangle, etc.</li>
-                                    <li><strong>Velocity-sensitive:</strong> Harder hits = more lifeforms spawn</li>
-                                    <li><strong>Filter control:</strong> CC messages shape the sound</li>
+                                    <li><strong>Volume → Radiation:</strong> Loud sounds increase mutation rates</li>
+                                    <li><strong>Pitch → Lifeform Spawning:</strong> Musical notes create new life</li>
+                                    <li><strong>Brightness → DNA Chaos:</strong> High frequencies increase mutations</li>
+                                    <li><strong>Low Frequencies → Gravity:</strong> Bass automatically enables gravity</li>
+                                    <li><strong>Maximum Volume → Thanos Snap:</strong> Peak levels trigger population control</li>
                                 </ul>
                                 
-                                <h5>Control Channels (9+):</h5>
+                                <h5>🎛️ Real-time Controls:</h5>
                                 <ul>
-                                    <li><strong>All existing controls</strong> work as before</li>
-                                    <li><strong>Audio effects:</strong> Thanos Snap = doom chord, Radiation = Geiger sounds</li>
-                                    <li><strong>Ambient soundscape:</strong> Evolves with lifeform population</li>
+                                    <li><strong>Sensitivity:</strong> How responsive to volume changes</li>
+                                    <li><strong>Pitch Response:</strong> How many lifeforms notes spawn</li>
+                                    <li><strong>Visual Feedback:</strong> Live volume meter and frequency display</li>
+                                    <li><strong>Smart Analysis:</strong> Automatic pitch detection and spectral analysis</li>
                                 </ul>
                                 
-                                <h5>Perfect for Live Performance:</h5>
+                                <h4>🎹 MIDI + Audio Performance</h4>
+                                <p>Revolutionary dual-system for complete audiovisual control:</p>
+                                
+                                <h5>Simultaneous Control:</h5>
                                 <ul>
-                                    <li><strong>Play melodies</strong> while controlling the simulation</li>
-                                    <li><strong>Visual-audio sync:</strong> Music creates lifeforms in real-time</li>
-                                    <li><strong>Atmospheric sounds</strong> respond to artificial life activity</li>
-                                    <li><strong>Festival-ready:</strong> Complete audiovisual experience</li>
+                                    <li><strong>MIDI Controllers:</strong> Precise parameter control</li>
+                                    <li><strong>Audio Instruments:</strong> Organic, expressive control</li>
+                                    <li><strong>Mixed Performance:</strong> Use both systems together</li>
+                                    <li><strong>Festival-ready:</strong> Complete live performance setup</li>
                                 </ul>
                             </div>
                         </div>
@@ -166,6 +195,7 @@
     </div>
     
     <script src="audio.js"></script>
+    <script src="audio-input.js"></script>
     <script src="midi.js"></script>
     <script src="alife.js"></script>
 </body>

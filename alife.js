@@ -34,7 +34,9 @@ class ArtificialLife {
         this.initializeControls();
         this.initializeMIDI();
         this.initializeAudio();
+        this.initializeAudioInput();
         this.startLife();
+        this.startVisualizationUpdate();
     }
     
     initializeControls() {
@@ -91,6 +93,34 @@ class ArtificialLife {
                 this.audioSystem.setAmbientVolume(parseInt(e.target.value) / 100);
             }
         });
+        
+        // Audio input controls
+        document.getElementById('audioInputToggle').addEventListener('click', async () => {
+            if (this.audioInputController) {
+                const btn = document.getElementById('audioInputToggle');
+                if (!this.audioInputController.isEnabled) {
+                    const success = await this.audioInputController.enableAudioInput();
+                    if (success) {
+                        btn.textContent = 'Disable Audio Input';
+                    }
+                } else {
+                    this.audioInputController.disableAudioInput();
+                    btn.textContent = 'Enable Audio Input';
+                }
+            }
+        });
+        
+        document.getElementById('audioSensitivity').addEventListener('input', (e) => {
+            if (this.audioInputController) {
+                this.audioInputController.setSensitivity(parseFloat(e.target.value));
+            }
+        });
+        
+        document.getElementById('pitchSensitivity').addEventListener('input', (e) => {
+            if (this.audioInputController) {
+                this.audioInputController.setPitchSensitivity(parseFloat(e.target.value));
+            }
+        });
     }
     
     initializeMIDI() {
@@ -104,6 +134,13 @@ class ArtificialLife {
         // Initialize audio system if available
         if (typeof ALifeAudioSystem !== 'undefined') {
             this.audioSystem = new ALifeAudioSystem(this);
+        }
+    }
+    
+    initializeAudioInput() {
+        // Initialize audio input controller if available
+        if (typeof AudioInputController !== 'undefined') {
+            this.audioInputController = new AudioInputController(this);
         }
     }
     
@@ -409,6 +446,32 @@ class ArtificialLife {
         document.getElementById('currentCount').textContent = this.lifeforms.size;
         document.getElementById('totalCount').textContent = this.session.totalLifeformsCreated;
         document.getElementById('maxCount').textContent = this.session.highestConcurrentLifeforms;
+    }
+    
+    startVisualizationUpdate() {
+        // Update audio input visualization every 100ms
+        setInterval(() => {
+            if (this.audioInputController && this.audioInputController.isEnabled) {
+                const data = this.audioInputController.getVisualizationData();
+                
+                // Update volume meter
+                const volumeBar = document.getElementById('volumeBar');
+                if (volumeBar) {
+                    volumeBar.style.width = `${data.volume * 100}%`;
+                }
+                
+                // Update frequency display
+                const frequencyDisplay = document.getElementById('frequencyDisplay');
+                if (frequencyDisplay) {
+                    if (data.frequency > 0) {
+                        const noteName = this.audioInputController.midiNoteToName(data.pitch);
+                        frequencyDisplay.textContent = `${data.frequency.toFixed(1)}Hz (${noteName})`;
+                    } else {
+                        frequencyDisplay.textContent = data.volume > 0.1 ? 'Analyzing...' : 'No signal';
+                    }
+                }
+            }
+        }, 100);
     }
 }
 
