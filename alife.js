@@ -2,8 +2,9 @@ class ArtificialLife {
     constructor() {
         this.canvas = document.getElementById('lifeCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.gridSize = 64;
-        this.cellSize = 10;
+        
+        // Calculate responsive canvas size based on available space
+        this.calculateCanvasSize();
         
         this.canvas.width = this.gridSize * this.cellSize;
         this.canvas.height = this.gridSize * this.cellSize;
@@ -38,6 +39,45 @@ class ArtificialLife {
         this.initializeDanceController();
         this.startLife();
         this.startVisualizationUpdate();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.calculateCanvasSize();
+            this.canvas.width = this.gridSize * this.cellSize;
+            this.canvas.height = this.gridSize * this.cellSize;
+        });
+    }
+    
+    calculateCanvasSize() {
+        // Get available space (minus sidebar width of 350px and some padding)
+        const availableWidth = window.innerWidth - 350 - 40; // 350px sidebar + 40px padding
+        const availableHeight = window.innerHeight - 40; // 40px for top/bottom padding
+        
+        // Use the smaller dimension to keep it square
+        const availableSize = Math.min(availableWidth, availableHeight);
+        
+        // Set minimum and maximum sizes
+        const minSize = 400; // Minimum 400px
+        const maxSize = 1200; // Maximum 1200px
+        
+        const canvasSize = Math.max(minSize, Math.min(maxSize, availableSize));
+        
+        // Calculate grid and cell size based on canvas size
+        if (canvasSize <= 600) {
+            // Small screens: 60x60 grid with 10px cells = 600px max
+            this.gridSize = Math.floor(canvasSize / 10);
+            this.cellSize = 10;
+        } else if (canvasSize <= 900) {
+            // Medium screens: 12px cells
+            this.cellSize = 12;
+            this.gridSize = Math.floor(canvasSize / this.cellSize);
+        } else {
+            // Large screens: 15px cells for better visibility
+            this.cellSize = 15;
+            this.gridSize = Math.floor(canvasSize / this.cellSize);
+        }
+        
+        console.log(`🖥️ Canvas: ${canvasSize}px (${this.gridSize}x${this.gridSize} grid, ${this.cellSize}px cells)`);
     }
     
     initializeControls() {
@@ -604,11 +644,12 @@ class ArtificialLife {
                     document.getElementById('danceToggle').click();
                 }
                 
-                // Increase canvas size for exhibition
-                this.cellSize = 15;
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-                this.gridSize = Math.floor(Math.min(window.innerWidth / this.cellSize, window.innerHeight / this.cellSize));
+                // Use full screen for exhibition
+                const fullscreenSize = Math.min(window.innerWidth, window.innerHeight);
+                this.cellSize = 18; // Larger cells for exhibition
+                this.gridSize = Math.floor(fullscreenSize / this.cellSize);
+                this.canvas.width = this.gridSize * this.cellSize;
+                this.canvas.height = this.gridSize * this.cellSize;
                 
                 console.log('🎨 Exhibition mode activated!');
             });
@@ -619,9 +660,8 @@ class ArtificialLife {
                 mainContent.style.width = '';
                 btn.textContent = 'Exhibition Mode';
                 
-                // Restore normal canvas size
-                this.cellSize = 10;
-                this.gridSize = 64;
+                // Restore responsive canvas size
+                this.calculateCanvasSize();
                 this.canvas.width = this.gridSize * this.cellSize;
                 this.canvas.height = this.gridSize * this.cellSize;
                 
