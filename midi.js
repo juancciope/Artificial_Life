@@ -37,11 +37,21 @@ class MIDIController {
         console.log(`🔌 Connected to MIDI device: ${input.name} (ID: ${input.id})`);
         this.connectedDevices.set(input.id, input);
         
-        // Detect MicroLab Smart specifically
-        if (input.name.toLowerCase().includes('microlab')) {
+        // Detect specific MIDI controllers
+        const deviceName = input.name.toLowerCase();
+        
+        if (deviceName.includes('microlab')) {
             console.log('🎹 MicroLab Smart detected! Optimized controls activated.');
             console.log('💡 Use Mod Wheel for Radiation, Pitch Bend for Speed');
             console.log('💡 C1-G1: Basic controls, C2-G2: Advanced, C3+: Musical performance');
+        } else if (deviceName.includes('irig') || deviceName.includes('i-rig')) {
+            console.log('🎹 iRig Keys detected! Optimized controls activated.');
+            console.log('💡 Full 37/49/61-key support with velocity sensitivity');
+            console.log('💡 C1-G1: Basic controls, C2-G2: Advanced, C3+: Musical performance');
+            console.log('💡 Use sustain pedal for Thanos Snap, if connected');
+        } else if (deviceName.includes('minilab')) {
+            console.log('🎹 MiniLab MkII detected! Full control surface activated.');
+            console.log('💡 8 knobs, 8 pads, and full keyboard mapping available');
         }
         
         // Set up message handler
@@ -213,6 +223,35 @@ class MIDIController {
                 console.log(`✨ Visual intensity: ${this.alife.visualIntensity}`);
                 break;
                 
+            // Sustain Pedal (CC 64) - Common on iRig Keys and other controllers
+            case 64: // Sustain Pedal
+                if (value >= 64) { // Pedal pressed
+                    console.log('🦶 Sustain pedal pressed - THANOS SNAP! 💀');
+                    this.alife.thanosSnap();
+                    this.createFeedbackMessage('THANOS SNAP! 💀', 'midi-feedback-kill');
+                    if (this.alife.audioSystem) {
+                        this.alife.audioSystem.playThanosSfx('intense');
+                    }
+                } else { // Pedal released
+                    console.log('🦶 Sustain pedal released');
+                }
+                break;
+                
+            // Expression Pedal (CC 11) - Available on some iRig Keys models
+            case 11: // Expression Pedal
+                // Map expression pedal to population limit
+                this.alife.session.populationLimit = Math.floor(10 + (value * 90 / 127)); // 10-100 range
+                console.log(`👥 Population limit: ${this.alife.session.populationLimit}`);
+                break;
+                
+            // Volume Pedal (CC 7) - Standard MIDI volume
+            case 7: // Volume
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setMasterVolume(value / 127);
+                    console.log(`🔊 Master volume: ${Math.round(value / 127 * 100)}%`);
+                }
+                break;
+                
             // Other MiniLab MkII knobs (reserved)
             case 18: case 19: case 17: case 91: case 79: case 72: case 92:
                 console.log(`Reserved MiniLab knob CC ${ccNumber}: ${value}`);
@@ -223,17 +262,19 @@ class MIDIController {
                 console.log(`🔍 UNMAPPED CC ${ccNumber} = ${value}`);
                 console.log(`💡 MicroLab: Use Mod Wheel (CC 1) for Radiation, Pitch Bend for Speed`);
                 console.log(`💡 MiniLab MkII: All knobs supported as before`);
+                console.log(`💡 iRig Keys: Use Sustain Pedal (CC 64) for Thanos Snap`);
                 break;
         }
     }
 
     handleNoteOn(note, velocity) {
-        // Device-agnostic note mapping - works with both MicroLab and MiniLab MkII
+        // Universal note mapping - optimized for MicroLab, MiniLab MkII, and iRig Keys
         console.log(`🎹 Note: ${note}, Velocity: ${velocity} (${this.getNoteNameFromMIDI(note)})`);
         
         switch(note) {
-            // === ARTURIA MICROLAB SMART OPTIMIZED MAPPING ===
-            // Uses the 25-key range efficiently across octaves
+            // === UNIVERSAL MIDI KEYBOARD MAPPING ===
+            // Works with all keyboards: MicroLab Smart (25-key), iRig Keys (37/49/61-key), MiniLab MkII
+            // iRig Keys users benefit from extended range and velocity sensitivity
             
             // Lower octave (C1-B1): Basic Life Controls
             case 36: // C1 - Start Life
@@ -379,15 +420,50 @@ class MIDIController {
             // (Pads typically send notes 36-43 but we've already mapped those above)
             
             default:
-                // Any unmapped notes in performance range spawn lifeforms
-                if (note >= 24 && note <= 96) {
-                    const performanceSpawns = Math.floor(velocity / 32) + 1;
-                    for (let i = 0; i < performanceSpawns; i++) {
-                        this.alife.createLifeform();
+                // Enhanced performance range for iRig Keys and other full-range controllers
+                if (note >= 24 && note <= 108) { // Extended range for 61-key controllers
+                    const velocityNormalized = velocity / 127;
+                    
+                    // iRig Keys enhanced velocity response
+                    let performanceSpawns;
+                    if (velocity < 32) {
+                        performanceSpawns = 1; // Soft touch
+                    } else if (velocity < 64) {
+                        performanceSpawns = 2; // Medium touch
+                    } else if (velocity < 96) {
+                        performanceSpawns = 3; // Strong touch
+                    } else {
+                        performanceSpawns = 4; // Very strong touch
                     }
-                    console.log(`🎹 Performance note ${this.getNoteNameFromMIDI(note)}: spawned ${performanceSpawns} lifeforms`);
+                    
+                    // Create enhanced lifeforms with velocity-based characteristics
+                    for (let i = 0; i < performanceSpawns; i++) {
+                        const lifeform = this.alife.createLifeform();
+                        if (lifeform) {
+                            // iRig Keys benefit: Velocity affects lifeform characteristics
+                            lifeform.strength = Math.floor(lifeform.strength * (0.5 + velocityNormalized));
+                            lifeform.timeToLive = Math.floor(lifeform.timeToLive * (0.7 + velocityNormalized * 0.6));
+                            
+                            // High/low note special effects for extended range controllers
+                            if (note >= 84) { // High notes - shimmer effect
+                                lifeform.shimmer = 1.5 + velocityNormalized;
+                            } else if (note <= 36) { // Low notes - bass boost
+                                lifeform.beatPulse = 1.3 + velocityNormalized * 0.5;
+                                lifeform.lastKickTime = Date.now();
+                            }
+                        }
+                    }
+                    
+                    console.log(`🎹 ${this.getNoteNameFromMIDI(note)} (vel:${velocity}): ${performanceSpawns} enhanced lifeforms`);
+                    
+                    // Send to audio system for musical performance
+                    if (this.alife.audioSystem) {
+                        this.alife.audioSystem.handleMusicMIDI(0x90, note, velocity, 1);
+                    }
+                    
                 } else {
-                    console.log(`❓ Unmapped Note: ${note} (${this.getNoteNameFromMIDI(note)}), Velocity: ${velocity}`);
+                    console.log(`❓ Note outside range: ${note} (${this.getNoteNameFromMIDI(note)}), Velocity: ${velocity}`);
+                    console.log(`💡 iRig Keys: Extended 24-108 note range supported!`);
                 }
         }
     }
