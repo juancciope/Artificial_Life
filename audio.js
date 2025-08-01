@@ -33,7 +33,7 @@ class ALifeAudioSystem {
 
     async initializeAudioSystem() {
         try {
-            // Create audio context
+            // Create audio context (but don't start it yet due to autoplay policy)
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
             // Create gain nodes for mixing
@@ -57,11 +57,11 @@ class ALifeAudioSystem {
             // Initialize synthesizers
             this.initializeSynthesizers();
             
-            // Start ambient soundscape
-            this.startAmbientSoundscape();
+            // Don't start ambient soundscape until user interaction
+            // this.startAmbientSoundscape();
             
-            console.log('ALife Audio System initialized!');
-            this.isEnabled = true;
+            console.log('ALife Audio System initialized! (suspended until user interaction)');
+            this.isEnabled = false; // Start disabled until user clicks enable
             
         } catch (error) {
             console.warn('Audio system initialization failed:', error);
@@ -231,6 +231,12 @@ class ALifeAudioSystem {
     // Ambient Soundscape
     startAmbientSoundscape() {
         if (!this.audioContext) return;
+        
+        // Don't start ambient if context is suspended
+        if (this.audioContext.state === 'suspended') {
+            console.log('⏸️ Ambient soundscape delayed until audio context resumes');
+            return;
+        }
 
         // Create evolving ambient pad
         const createAmbientLayer = (baseFreq, detune = 0) => {
@@ -396,10 +402,23 @@ class ALifeAudioSystem {
     }
 
     enable() {
-        if (this.audioContext && this.audioContext.state === 'suspended') {
-            this.audioContext.resume();
-        }
         this.isEnabled = true;
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            this.audioContext.resume().then(() => {
+                console.log('✅ Audio context resumed');
+                // Start ambient soundscape after user interaction
+                if (!this.backgroundAmbient) {
+                    this.startAmbientSoundscape();
+                }
+            }).catch(error => {
+                console.warn('Failed to resume audio context:', error);
+            });
+        } else if (this.audioContext && this.audioContext.state === 'running') {
+            // If context is already running, just start ambient if needed
+            if (!this.backgroundAmbient) {
+                this.startAmbientSoundscape();
+            }
+        }
     }
 
     disable() {
