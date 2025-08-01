@@ -363,9 +363,9 @@ class MIDIController {
                 
             // === M-AUDIO OXYGEN SERIES KNOBS (CC 74-81, avoiding conflicts) ===
             case 78: // Knob 1 - Grid Size
-                const newGridSize = Math.floor(32 + (value * 32 / 127));
-                if (newGridSize !== this.alife.gridSize) {
-                    this.alife.gridSize = newGridSize;
+                const oxygenGridSize = Math.floor(32 + (value * 32 / 127));
+                if (oxygenGridSize !== this.alife.gridSize) {
+                    this.alife.gridSize = oxygenGridSize;
                     this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
                     this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
                     console.log(`📐 Grid size: ${this.alife.gridSize}x${this.alife.gridSize}`);
@@ -584,9 +584,9 @@ class MIDIController {
                 
             case 52: // E2 - Grid Size Control
                 // Velocity controls grid size
-                const newGridSize = Math.floor(32 + (velocity * 32 / 127));
-                if (newGridSize !== this.alife.gridSize) {
-                    this.alife.gridSize = newGridSize;
+                const noteGridSize = Math.floor(32 + (velocity * 32 / 127));
+                if (noteGridSize !== this.alife.gridSize) {
+                    this.alife.gridSize = noteGridSize;
                     this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
                     this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
                     console.log(`📐 Grid size: ${this.alife.gridSize}x${this.alife.gridSize}`);
