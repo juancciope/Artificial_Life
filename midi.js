@@ -49,14 +49,20 @@ class MIDIController {
             console.log('💡 Full 37/49/61-key support with velocity sensitivity');
             console.log('💡 C1-G1: Basic controls, C2-G2: Advanced, C3+: Musical performance');
             console.log('💡 Use sustain pedal for Thanos Snap, if connected');
-        } else if (deviceName.includes('oxygen')) {
+        } else if (deviceName.includes('oxygen') || deviceName.includes('m-audio') || 
+                   deviceName.includes('maudio') || deviceName.includes('m audio')) {
             console.log('🎹 M-Audio Oxygen detected! Full studio controller activated.');
             console.log('💡 8 Faders + 8 Knobs + Transport controls available');
             console.log('💡 Faders: Visual/Audio mixing | Knobs: Life parameters');
             console.log('💡 Play/Stop: Life control | Record: Thanos Snap');
+            console.log(`💡 Device detected as: "${input.name}"`);
         } else if (deviceName.includes('minilab')) {
             console.log('🎹 MiniLab MkII detected! Full control surface activated.');
             console.log('💡 8 knobs, 8 pads, and full keyboard mapping available');
+        } else {
+            console.log(`🎹 Generic MIDI controller detected: "${input.name}"`);
+            console.log('💡 Basic keyboard mapping active - all controllers supported');
+            console.log('💡 If this is an M-Audio Oxygen, faders (CC 7,71-77) and knobs (CC 78,80-86) should work');
         }
         
         // Set up message handler
@@ -399,13 +405,21 @@ class MIDIController {
                 console.log(`Reserved MiniLab knob CC ${ccNumber}: ${value}`);
                 break;
                 
-            // Unmapped controls - helpful debugging
+            // Unmapped controls - helpful debugging and auto-mapping
             default:
                 console.log(`🔍 UNMAPPED CC ${ccNumber} = ${value}`);
+                
+                // Auto-detect common M-Audio Oxygen CC ranges
+                if (ccNumber >= 70 && ccNumber <= 79) {
+                    console.log(`🎛️ DETECTED: This looks like an M-Audio Oxygen fader/knob!`);
+                    console.log(`💡 CC ${ccNumber} in Oxygen range - you can manually map this`);
+                }
+                
                 console.log(`💡 MicroLab: Use Mod Wheel (CC 1) for Radiation, Pitch Bend for Speed`);
                 console.log(`💡 MiniLab MkII: All knobs supported as before`);
                 console.log(`💡 iRig Keys: Use Sustain Pedal (CC 64) for Thanos Snap`);
                 console.log(`💡 M-Audio Oxygen: Faders 1-8 (CC 7,71-77), Knobs 1-8 (CC 78,80-86)`);
+                console.log(`💡 Move your Oxygen controls to see their CC numbers here!`);
                 break;
         }
     }
