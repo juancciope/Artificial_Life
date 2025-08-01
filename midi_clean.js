@@ -181,9 +181,11 @@ class MIDIController {
     handleNoteOn(note, velocity) {
         console.log(`🎹 Note: ${note}, Velocity: ${velocity} (${this.getNoteNameFromMIDI(note)})`);
         
-        // M-Audio Oxygen Pad Controls (36-43) - Map to 8 main control buttons
+        // M-Audio Oxygen 49 Pad Controls - Map to 8 main control buttons
         // Handle pads FIRST, then keyboard notes for music
-        if (note >= 36 && note <= 43) {
+        // Actual pad notes: 24, 26, 30, 33, 34, 37, 38, 39
+        const padNotes = [24, 26, 30, 33, 34, 37, 38, 39];
+        if (padNotes.includes(note)) {
             // This is a pad - handle control functions
         } else {
             // This is a keyboard note - handle musical performance only
@@ -193,28 +195,28 @@ class MIDIController {
         
         // Pad control mapping
         switch(note) {
-            case 36: // Pad 1 - Start Life
+            case 24: // Pad 1 - Start Life (C1)
                 this.flashButton('startBtn');
                 this.alife.startLife();
                 console.log('🚀 Pad 1: Start Life');
                 this.createFeedbackMessage('START LIFE', 'midi-feedback-spawn');
                 break;
                 
-            case 37: // Pad 2 - Pause Life
+            case 26: // Pad 2 - Pause Life (D1)
                 this.flashButton('pauseBtn');
                 this.alife.pauseLife();
                 console.log('⏸️ Pad 2: Pause Life');
                 this.createFeedbackMessage('PAUSE LIFE', 'midi-feedback');
                 break;
                 
-            case 38: // Pad 3 - Reset Life
+            case 30: // Pad 3 - Reset Life (F#1)
                 this.flashButton('resetBtn');
                 this.alife.resetLife();
                 console.log('🔄 Pad 3: Reset Life');
                 this.createFeedbackMessage('RESET LIFE', 'midi-feedback');
                 break;
                 
-            case 39: // Pad 4 - Thanos Snap
+            case 34: // Pad 4 - Thanos Snap (A#1)
                 this.flashButton('thanosBtn');
                 this.alife.thanosSnap();
                 console.log('💀 Pad 4: Thanos Snap');
@@ -224,7 +226,7 @@ class MIDIController {
                 }
                 break;
                 
-            case 40: // Pad 5 - Enable/Disable Audio
+            case 38: // Pad 5 - Enable/Disable Audio (D2)
                 const audioBtn = document.getElementById('audioToggle');
                 if (this.alife.audioSystem) {
                     this.alife.audioSystem.toggle();
@@ -234,41 +236,57 @@ class MIDIController {
                 }
                 break;
                 
-            case 41: // Pad 6 - Toggle Gravity
-                this.alife.session.gravityOn = !this.alife.session.gravityOn;
-                document.getElementById('gravityToggle').checked = this.alife.session.gravityOn;
-                console.log(`🌍 Pad 6: Gravity ${this.alife.session.gravityOn ? 'ON' : 'OFF'}`);
-                this.createFeedbackMessage(`GRAVITY ${this.alife.session.gravityOn ? 'ON' : 'OFF'}`, 'midi-feedback');
+            case 33: // Pad 6 - Enable/Disable Audio Input (A1)
+                const audioInputBtn = document.getElementById('audioInputToggle');
+                if (this.alife.audioInputController) {
+                    if (!this.alife.audioInputController.isEnabled) {
+                        this.alife.audioInputController.enableAudioInput().then(success => {
+                            if (success) {
+                                audioInputBtn.textContent = 'Disable Audio Input';
+                                console.log('🎤 Pad 6: Audio Input ON');
+                                this.createFeedbackMessage('AUDIO INPUT ON', 'midi-feedback-spawn');
+                            }
+                        });
+                    } else {
+                        this.alife.audioInputController.disableAudioInput();
+                        audioInputBtn.textContent = 'Enable Audio Input';
+                        console.log('🎤 Pad 6: Audio Input OFF');
+                        this.createFeedbackMessage('AUDIO INPUT OFF', 'midi-feedback');
+                    }
+                }
                 break;
                 
-            case 42: // Pad 7 - Toggle Trails
-                this.alife.session.drawTrails = !this.alife.session.drawTrails;
-                document.getElementById('trailsToggle').checked = this.alife.session.drawTrails;
-                console.log(`✨ Pad 7: Trails ${this.alife.session.drawTrails ? 'ON' : 'OFF'}`);
-                this.createFeedbackMessage(`TRAILS ${this.alife.session.drawTrails ? 'ON' : 'OFF'}`, 'midi-feedback');
-                break;
-                
-            case 43: // Pad 8 - Toggle Dance Mode
+            case 39: // Pad 7 - Toggle Dance Mode (D#2)
                 if (this.alife.danceController) {
-                    const btn = document.getElementById('danceToggle');
+                    const danceBtn = document.getElementById('danceToggle');
                     if (!this.alife.danceController.isEnabled) {
                         this.alife.danceController.enable();
-                        btn.textContent = 'Disable Dance Mode';
-                        console.log('💃 Pad 8: Dance Mode ON');
+                        danceBtn.textContent = 'Disable Dance Mode';
+                        console.log('💃 Pad 7: Dance Mode ON');
                         this.createFeedbackMessage('DANCE MODE ON', 'midi-feedback-spawn');
                     } else {
                         this.alife.danceController.disable();
-                        btn.textContent = 'Enable Dance Mode';
-                        console.log('🛑 Pad 8: Dance Mode OFF');
+                        danceBtn.textContent = 'Enable Dance Mode';
+                        console.log('🛑 Pad 7: Dance Mode OFF');
                         this.createFeedbackMessage('DANCE MODE OFF', 'midi-feedback');
                     }
                 }
                 break;
                 
+            case 37: // Pad 8 - Exhibition Mode (C#2)
+                const exhibitionBtn = document.getElementById('exhibitionToggle');
+                if (exhibitionBtn) {
+                    exhibitionBtn.click();
+                    console.log('🎨 Pad 8: Exhibition Mode Toggle');
+                    this.createFeedbackMessage('EXHIBITION MODE', 'midi-feedback-spawn');
+                }
+                break;
+                
             // Unmapped pad/control notes
             default:
-                console.log(`🎛️ Unmapped pad/control note: ${this.getNoteNameFromMIDI(note)} (${note})`);
-                console.log('💡 M-Audio Oxygen: Pads 1-8 control buttons, keyboard plays music');
+                console.log(`🔥 PAD/CONTROL NOTE DETECTED: ${this.getNoteNameFromMIDI(note)} (Note ${note})`);
+                console.log(`💡 This might be a pad! Expected pads are notes 36-43`);
+                console.log(`💡 If this is a pad, tell me which pad number (1-8) you pressed!`);
                 break;
         }
     }
