@@ -49,6 +49,11 @@ class MIDIController {
             console.log('💡 Full 37/49/61-key support with velocity sensitivity');
             console.log('💡 C1-G1: Basic controls, C2-G2: Advanced, C3+: Musical performance');
             console.log('💡 Use sustain pedal for Thanos Snap, if connected');
+        } else if (deviceName.includes('oxygen')) {
+            console.log('🎹 M-Audio Oxygen detected! Full studio controller activated.');
+            console.log('💡 8 Faders + 8 Knobs + Transport controls available');
+            console.log('💡 Faders: Visual/Audio mixing | Knobs: Life parameters');
+            console.log('💡 Play/Stop: Life control | Record: Thanos Snap');
         } else if (deviceName.includes('minilab')) {
             console.log('🎹 MiniLab MkII detected! Full control surface activated.');
             console.log('💡 8 knobs, 8 pads, and full keyboard mapping available');
@@ -244,16 +249,153 @@ class MIDIController {
                 console.log(`👥 Population limit: ${this.alife.session.populationLimit}`);
                 break;
                 
-            // Volume Pedal (CC 7) - Standard MIDI volume
-            case 7: // Volume
+            // Volume Control (CC 7) - Standard MIDI volume / M-Audio Oxygen Fader 1
+            case 7: // Volume / Master Fader
                 if (this.alife.audioSystem) {
                     this.alife.audioSystem.setMasterVolume(value / 127);
                     console.log(`🔊 Master volume: ${Math.round(value / 127 * 100)}%`);
                 }
                 break;
                 
-            // Other MiniLab MkII knobs (reserved)
-            case 18: case 19: case 17: case 91: case 79: case 72: case 92:
+            // === M-AUDIO OXYGEN SERIES FADERS (CC 71-78) ===
+            case 71: // Fader 2 - Music Volume
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setMusicVolume(value / 127);
+                    console.log(`🎵 Music volume: ${Math.round(value / 127 * 100)}%`);
+                }
+                break;
+                
+            case 72: // Fader 3 - SFX Volume  
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setSfxVolume(value / 127);
+                    console.log(`🔊 SFX volume: ${Math.round(value / 127 * 100)}%`);
+                }
+                break;
+                
+            case 73: // Fader 4 - Ambient Volume
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setAmbientVolume(value / 127);
+                    console.log(`🌊 Ambient volume: ${Math.round(value / 127 * 100)}%`);
+                }
+                break;
+                
+            case 74: // Fader 5 - Radiation Level
+                this.alife.session.radiation = Math.floor(value * 100 / 127);
+                document.getElementById('radiationSlider').value = this.alife.session.radiation;
+                document.getElementById('radiationValue').textContent = this.alife.session.radiation;
+                this.showRadiationLevel();
+                console.log(`☢️ Radiation: ${this.alife.session.radiation}%`);
+                break;
+                
+            case 75: // Fader 6 - Population Limit
+                this.alife.session.populationLimit = Math.floor(10 + (value * 90 / 127));
+                console.log(`👥 Population limit: ${this.alife.session.populationLimit}`);
+                break;
+                
+            case 76: // Fader 7 - DNA Chaos
+                this.alife.session.dnaChaosChance = Math.floor(value * 50 / 127);
+                console.log(`🧬 DNA Chaos: ${this.alife.session.dnaChaosChance}%`);
+                break;
+                
+            case 77: // Fader 8 - Animation Speed
+                this.alife.frameDelay = Math.floor(5 + (value * 95 / 127));
+                console.log(`⏱️ Animation speed: ${this.alife.frameDelay}ms delay`);
+                break;
+                
+            // === M-AUDIO OXYGEN SERIES KNOBS (CC 74-81, avoiding conflicts) ===
+            case 78: // Knob 1 - Grid Size
+                const newGridSize = Math.floor(32 + (value * 32 / 127));
+                if (newGridSize !== this.alife.gridSize) {
+                    this.alife.gridSize = newGridSize;
+                    this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
+                    this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
+                    console.log(`📐 Grid size: ${this.alife.gridSize}x${this.alife.gridSize}`);
+                }
+                break;
+                
+            case 80: // Knob 2 - Cell Size
+                this.alife.cellSize = Math.floor(4 + (value * 12 / 127));
+                this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
+                this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
+                console.log(`🔳 Cell size: ${this.alife.cellSize}px`);
+                break;
+                
+            case 81: // Knob 3 - Visual Intensity
+                this.alife.visualIntensity = Math.floor(2 + (value * 18 / 127));
+                console.log(`✨ Visual intensity: ${this.alife.visualIntensity}`);
+                break;
+                
+            case 82: // Knob 4 - Dance Formation Speed
+                if (this.alife.danceController) {
+                    this.alife.danceController.formationChangeRate = value / 127;
+                    console.log(`💃 Formation change rate: ${Math.round(this.alife.danceController.formationChangeRate * 100)}%`);
+                }
+                break;
+                
+            case 83: // Knob 5 - Beat Sensitivity
+                if (this.alife.danceController && this.alife.danceController.beatDetector) {
+                    this.alife.danceController.beatDetector.threshold = 1.0 + (value / 127);
+                    console.log(`🥁 Beat sensitivity: ${this.alife.danceController.beatDetector.threshold.toFixed(2)}`);
+                }
+                break;
+                
+            case 84: // Knob 6 - Particle Intensity
+                if (this.alife.danceController) {
+                    this.alife.danceController.maxParticles = Math.floor(50 + (value * 150 / 127));
+                    console.log(`✨ Max particles: ${this.alife.danceController.maxParticles}`);
+                }
+                break;
+                
+            case 85: // Knob 7 - Flow Field Speed
+                if (this.alife.danceController) {
+                    this.alife.danceController.flowFieldSpeed = 0.005 + (value * 0.02 / 127);
+                    console.log(`🌊 Flow field speed: ${this.alife.danceController.flowFieldSpeed.toFixed(4)}`);
+                }
+                break;
+                
+            case 86: // Knob 8 - Color Intensity
+                if (this.alife.danceController) {
+                    this.alife.danceController.colorIntensityMultiplier = 0.5 + (value / 127);
+                    console.log(`🎨 Color intensity: ${this.alife.danceController.colorIntensityMultiplier.toFixed(2)}`);
+                }
+                break;
+                
+            // === M-AUDIO OXYGEN TRANSPORT CONTROLS ===
+            case 87: // Transport Play Button (some Oxygen models)
+                console.log('▶️ Transport Play - Starting Life!');
+                this.flashButton('startBtn');
+                this.alife.startLife();
+                break;
+                
+            case 88: // Transport Stop Button (some Oxygen models)
+                console.log('⏹️ Transport Stop - Pausing Life!');
+                this.flashButton('pauseBtn');
+                this.alife.pauseLife();
+                break;
+                
+            case 89: // Transport Record Button (some Oxygen models)
+                console.log('⏺️ Transport Record - THANOS SNAP!');
+                this.alife.thanosSnap();
+                this.createFeedbackMessage('TRANSPORT THANOS! 💀', 'midi-feedback-kill');
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.playThanosSfx('intense');
+                }
+                break;
+                
+            case 90: // Transport Fast Forward (some Oxygen models)
+                // Speed up animation
+                this.alife.frameDelay = Math.max(1, this.alife.frameDelay - 10);
+                console.log(`⏩ Fast Forward - Speed: ${this.alife.frameDelay}ms`);
+                break;
+                
+            case 91: // Transport Rewind (some Oxygen models)  
+                // Slow down animation
+                this.alife.frameDelay = Math.min(100, this.alife.frameDelay + 10);
+                console.log(`⏪ Rewind - Speed: ${this.alife.frameDelay}ms`);
+                break;
+                
+            // Other MiniLab MkII knobs (reserved - avoiding Oxygen conflicts)
+            case 18: case 19: case 17: case 79:
                 console.log(`Reserved MiniLab knob CC ${ccNumber}: ${value}`);
                 break;
                 
@@ -263,6 +405,7 @@ class MIDIController {
                 console.log(`💡 MicroLab: Use Mod Wheel (CC 1) for Radiation, Pitch Bend for Speed`);
                 console.log(`💡 MiniLab MkII: All knobs supported as before`);
                 console.log(`💡 iRig Keys: Use Sustain Pedal (CC 64) for Thanos Snap`);
+                console.log(`💡 M-Audio Oxygen: Faders 1-8 (CC 7,71-77), Knobs 1-8 (CC 78,80-86)`);
                 break;
         }
     }
