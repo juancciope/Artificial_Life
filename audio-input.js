@@ -57,14 +57,39 @@ class AudioInputController {
         try {
             console.log('🎤 Requesting audio input access...');
             
-            // Request microphone/audio input access
+            // First, list available audio devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const audioInputs = devices.filter(device => device.kind === 'audioinput');
+            
+            console.log('🎤 Available audio input devices:');
+            audioInputs.forEach((device, index) => {
+                console.log(`  ${index + 1}. ${device.label || `Microphone ${index + 1}`} (${device.deviceId})`);
+            });
+            
+            // Try to avoid virtual devices and prefer real microphones
+            const preferredDevice = audioInputs.find(device => 
+                !device.label.toLowerCase().includes('virtual') && 
+                !device.label.toLowerCase().includes('ndi')
+            ) || audioInputs[0];
+            
+            if (preferredDevice) {
+                console.log(`🎯 Selected device: ${preferredDevice.label}`);
+            }
+            
+            // Request microphone/audio input access with specific device if found
+            const audioConstraints = {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+                sampleRate: 44100
+            };
+            
+            if (preferredDevice && preferredDevice.deviceId !== 'default') {
+                audioConstraints.deviceId = { exact: preferredDevice.deviceId };
+            }
+            
             this.mediaStream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false,
-                    sampleRate: 44100
-                }
+                audio: audioConstraints
             });
 
             console.log('✅ Audio input access granted!');
@@ -86,9 +111,18 @@ class AudioInputController {
             this.analyser.minDecibels = this.minDecibels;
             this.analyser.maxDecibels = this.maxDecibels;
             
-            // Create microphone source
+            // Create microphone source with gain stage
             this.microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
-            this.microphone.connect(this.analyser);
+            
+            // Add a gain node to boost weak signals
+            this.inputGain = this.audioContext.createGain();
+            this.inputGain.gain.value = 2.0; // Boost input by 2x
+            
+            // Connect: Microphone -> Gain -> Analyser
+            this.microphone.connect(this.inputGain);
+            this.inputGain.connect(this.analyser);
+            
+            console.log('🎚️ Input gain set to 2.0x for better sensitivity');
             
             // Initialize data arrays
             this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
@@ -457,15 +491,91 @@ class AudioInputController {
             
             console.log(`- Time Domain Max: ${timeMax.toFixed(4)}`);
             console.log(`- Current Volume: ${(this.currentVolume * 100).toFixed(2)}%`);
+            console.log(`- Input Gain: ${this.inputGain?.gain.value || 'N/A'}x`);
             
             if (max === 0 && timeMax < 0.001) {
                 console.warn('⚠️ No signal detected! Check:');
                 console.log('  1. Is your microphone selected in browser?');
                 console.log('  2. Is microphone muted in OS?');
                 console.log('  3. Try making loud sounds or tapping mic');
+                console.log('  4. NDI Virtual devices may not work - use a real microphone');
+                console.log('  5. Try: alife.audioInputController.listAudioDevices()');
             }
         } else {
             console.error('❌ Analyser not initialized!');
+        }
+    }
+    
+    // List all available audio devices
+    async listAudioDevices() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
+        
+        console.log('🎤 Available Audio Input Devices:');
+        audioInputs.forEach((device, index) => {
+            const isVirtual = device.label.toLowerCase().includes('virtual') || 
+                            device.label.toLowerCase().includes('ndi');
+            const warning = isVirtual ? ' ⚠️ (Virtual - may not work)' : '';
+            console.log(`${index}: ${device.label || 'Unknown Device'}${warning}`);
+            console.log(`   ID: ${device.deviceId}`);
+        });
+        
+        console.log('\n💡 To use a specific device:');
+        console.log('alife.audioInputController.selectAudioDevice(deviceIndex)');
+        
+        return audioInputs;
+    }
+    
+    // Manually select a specific audio device
+    async selectAudioDevice(deviceIndex) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
+        
+        if (deviceIndex < 0 || deviceIndex >= audioInputs.length) {
+            console.error(`❌ Invalid device index. Use 0-${audioInputs.length - 1}`);
+            return false;
+        }
+        
+        const selectedDevice = audioInputs[deviceIndex];
+        console.log(`🎯 Switching to: ${selectedDevice.label}`);
+        
+        // Disable current input
+        if (this.isEnabled) {
+            this.disableAudioInput();
+        }
+        
+        // Re-enable with selected device
+        try {
+            const audioConstraints = {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+                sampleRate: 44100,
+                deviceId: { exact: selectedDevice.deviceId }
+            };
+            
+            // Get new stream with selected device
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                audio: audioConstraints
+            });
+            
+            // Continue with normal setup
+            await this.enableAudioInput();
+            
+            console.log(`✅ Switched to ${selectedDevice.label}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Failed to switch audio device:', error);
+            return false;
+        }
+    }
+    
+    // Adjust input gain
+    setInputGain(gain) {
+        if (this.inputGain) {
+            this.inputGain.gain.value = Math.max(0.1, Math.min(10, gain));
+            console.log(`🎚️ Input gain set to ${this.inputGain.gain.value}x`);
         }
     }
 }
