@@ -94,10 +94,29 @@ class AudioInputController {
             this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
             this.frequencyData = new Float32Array(this.analyser.frequencyBinCount);
             
+            // Debug: Check audio stream
+            const audioTracks = this.mediaStream.getAudioTracks();
+            console.log(`🎵 Audio tracks found: ${audioTracks.length}`);
+            audioTracks.forEach(track => {
+                console.log(`  - Track: ${track.label}, Enabled: ${track.enabled}, Muted: ${track.muted}`);
+            });
+            
             console.log(`🎵 Audio analysis setup complete:
 - Sample Rate: ${this.audioContext.sampleRate}Hz
 - FFT Size: ${this.fftSize}
-- Frequency Bins: ${this.analyser.frequencyBinCount}`);
+- Frequency Bins: ${this.analyser.frequencyBinCount}
+- Audio Context State: ${this.audioContext.state}`);
+            
+            // Test the analyser immediately
+            setTimeout(() => {
+                const testData = new Uint8Array(this.analyser.frequencyBinCount);
+                this.analyser.getByteFrequencyData(testData);
+                const testMax = Math.max(...testData);
+                console.log(`🔍 Initial signal test: Max value = ${testMax}`);
+                if (testMax === 0) {
+                    console.warn('⚠️ No signal detected on initial test - check microphone input');
+                }
+            }, 500);
             
             this.isEnabled = true;
             this.startAnalysis();
@@ -165,6 +184,13 @@ class AudioInputController {
         this.analyser.getByteFrequencyData(this.dataArray);
         this.analyser.getFloatFrequencyData(this.frequencyData);
         
+        // Debug: Check if we're getting any data
+        const maxValue = Math.max(...this.dataArray);
+        if (maxValue > 0 && !this.hasSignal) {
+            console.log('🎤 Signal detected! Max value:', maxValue);
+            this.hasSignal = true;
+        }
+        
         // Calculate audio features
         this.calculateVolume();
         this.calculatePitch();
@@ -180,10 +206,26 @@ class AudioInputController {
     calculateVolume() {
         // Calculate RMS volume
         let sum = 0;
+        let maxVal = 0;
+        
         for (let i = 0; i < this.dataArray.length; i++) {
             sum += this.dataArray[i] * this.dataArray[i];
+            maxVal = Math.max(maxVal, this.dataArray[i]);
         }
-        this.currentVolume = Math.sqrt(sum / this.dataArray.length) / 255;
+        
+        // Use both RMS and peak for better detection
+        const rms = Math.sqrt(sum / this.dataArray.length) / 255;
+        const peak = maxVal / 255;
+        
+        // Use the higher value for better sensitivity
+        this.currentVolume = Math.max(rms * 2, peak); // Boost RMS by 2x for better response
+        
+        // Debug every 30 frames (about 1 second)
+        if (!this.debugCounter) this.debugCounter = 0;
+        this.debugCounter++;
+        if (this.debugCounter % 30 === 0) {
+            console.log(`📊 Audio levels - RMS: ${(rms * 100).toFixed(1)}%, Peak: ${(peak * 100).toFixed(1)}%, Volume: ${(this.currentVolume * 100).toFixed(1)}%`);
+        }
     }
 
     calculatePitch() {
@@ -261,7 +303,7 @@ class AudioInputController {
     }
 
     mapAudioToControls() {
-        if (!this.alife || this.currentVolume < 0.1) return; // Noise gate
+        if (!this.alife || this.currentVolume < 0.01) return; // Lower noise gate for better sensitivity
         
         // Volume -> Radiation (loud sounds increase radiation)
         const volumeRadiation = Math.floor(this.currentVolume * 100 * this.sensitivity);
@@ -389,6 +431,42 @@ class AudioInputController {
             isEnabled: this.isEnabled,
             isAnalyzing: this.isAnalyzing
         };
+    }
+    
+    // Manual test function to diagnose audio issues
+    testAudioInput() {
+        console.log('🧪 Audio Input Diagnostic Test:');
+        console.log(`- Controller Enabled: ${this.isEnabled}`);
+        console.log(`- Analyzing: ${this.isAnalyzing}`);
+        console.log(`- Audio Context State: ${this.audioContext?.state || 'No context'}`);
+        console.log(`- Media Stream Active: ${this.mediaStream?.active || false}`);
+        
+        if (this.analyser && this.dataArray) {
+            // Get fresh data
+            this.analyser.getByteFrequencyData(this.dataArray);
+            const max = Math.max(...this.dataArray);
+            const avg = this.dataArray.reduce((a, b) => a + b, 0) / this.dataArray.length;
+            
+            console.log(`- Frequency Data Max: ${max}`);
+            console.log(`- Frequency Data Average: ${avg.toFixed(2)}`);
+            
+            // Get time domain data
+            const timeData = new Float32Array(this.analyser.fftSize);
+            this.analyser.getFloatTimeDomainData(timeData);
+            const timeMax = Math.max(...timeData.map(Math.abs));
+            
+            console.log(`- Time Domain Max: ${timeMax.toFixed(4)}`);
+            console.log(`- Current Volume: ${(this.currentVolume * 100).toFixed(2)}%`);
+            
+            if (max === 0 && timeMax < 0.001) {
+                console.warn('⚠️ No signal detected! Check:');
+                console.log('  1. Is your microphone selected in browser?');
+                console.log('  2. Is microphone muted in OS?');
+                console.log('  3. Try making loud sounds or tapping mic');
+            }
+        } else {
+            console.error('❌ Analyser not initialized!');
+        }
     }
 }
 
