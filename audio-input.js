@@ -84,15 +84,34 @@ class AudioInputController {
                 sampleRate: 44100
             };
             
-            if (preferredDevice && preferredDevice.deviceId !== 'default') {
+            // Only add deviceId constraint if we have a valid, non-empty device ID
+            if (preferredDevice && 
+                preferredDevice.deviceId && 
+                preferredDevice.deviceId !== 'default' && 
+                preferredDevice.deviceId.trim() !== '') {
                 audioConstraints.deviceId = { exact: preferredDevice.deviceId };
+                console.log(`🎯 Using specific device ID: ${preferredDevice.deviceId}`);
+            } else {
+                console.log('🎯 Using default audio input device');
             }
             
-            this.mediaStream = await navigator.mediaDevices.getUserMedia({
-                audio: audioConstraints
-            });
-
-            console.log('✅ Audio input access granted!');
+            try {
+                this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: audioConstraints
+                });
+                console.log('✅ Audio input access granted!');
+            } catch (error) {
+                console.warn('⚠️ Failed with specific constraints, trying basic audio:', error.message);
+                // Fallback to basic audio constraints
+                this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
+                console.log('✅ Audio input access granted with fallback constraints!');
+            }
             
             // Create audio context if not exists
             if (!this.audioContext) {
