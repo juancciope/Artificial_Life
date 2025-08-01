@@ -308,6 +308,47 @@ header {
     min-height: 1.2em;
 }
 
+/* Dance Controls */
+.dance-controls {
+    margin-top: 15px;
+}
+
+.control-label {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #ccc;
+    margin: 10px 0 5px 0;
+}
+
+.control-select {
+    width: 100%;
+    padding: 8px;
+    background: var(--medium-gray);
+    border: 1px solid var(--light-gray);
+    border-radius: 4px;
+    color: white;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.control-select:hover {
+    border-color: var(--primary-red);
+}
+
+.control-select:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+}
+
+.control-select option {
+    background: var(--dark-gray);
+    color: white;
+}
+
 .volume-control {
     display: flex;
     align-items: center;

@@ -93,6 +93,41 @@
                                 </div>
                             </div>
                             
+                            <div class="control-section">
+                                <h3>Dance Mode</h3>
+                                <button id="danceToggle" class="control-btn">Enable Dance Mode</button>
+                                <button id="exhibitionToggle" class="control-btn special">Exhibition Mode</button>
+                                <div class="dance-controls">
+                                    <label class="control-label">Dance Style:</label>
+                                    <select id="danceStyle" class="control-select">
+                                        <option value="flow">Flow Field</option>
+                                        <option value="pulse">Pulse</option>
+                                        <option value="spiral">Spiral</option>
+                                        <option value="wave">Wave</option>
+                                        <option value="constellation">Constellation</option>
+                                    </select>
+                                    
+                                    <label class="control-label">Formation:</label>
+                                    <select id="formationSelect" class="control-select">
+                                        <option value="random">Random</option>
+                                        <option value="circle">Circle</option>
+                                        <option value="spiral">Spiral</option>
+                                        <option value="grid">Grid</option>
+                                        <option value="heart">Heart</option>
+                                        <option value="star">Star</option>
+                                    </select>
+                                    
+                                    <label class="control-label">Color Palette:</label>
+                                    <select id="colorPalette" class="control-select">
+                                        <option value="neon">Neon</option>
+                                        <option value="sunset">Sunset</option>
+                                        <option value="ocean">Ocean</option>
+                                        <option value="aurora">Aurora</option>
+                                        <option value="monochrome">Red Monochrome</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
                             <div class="stats-section">
                                 <h3>Statistics</h3>
                                 <div class="stat">Current: <span id="currentCount">0</span></div>
@@ -196,6 +231,7 @@
     
     <script src="audio.js"></script>
     <script src="audio-input.js"></script>
+    <script src="dance-controller.js"></script>
     <script src="midi.js"></script>
     <script src="alife.js"></script>
 </body>

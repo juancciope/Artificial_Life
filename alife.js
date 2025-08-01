@@ -35,6 +35,7 @@ class ArtificialLife {
         this.initializeMIDI();
         this.initializeAudio();
         this.initializeAudioInput();
+        this.initializeDanceController();
         this.startLife();
         this.startVisualizationUpdate();
     }
@@ -121,6 +122,47 @@ class ArtificialLife {
                 this.audioInputController.setPitchSensitivity(parseFloat(e.target.value));
             }
         });
+        
+        // Dance controls
+        document.getElementById('danceToggle').addEventListener('click', () => {
+            if (this.danceController) {
+                const btn = document.getElementById('danceToggle');
+                if (!this.danceController.isEnabled) {
+                    this.danceController.enable();
+                    btn.textContent = 'Disable Dance Mode';
+                    // Auto-enable audio input for dance mode
+                    if (this.audioInputController && !this.audioInputController.isEnabled) {
+                        document.getElementById('audioInputToggle').click();
+                    }
+                } else {
+                    this.danceController.disable();
+                    btn.textContent = 'Enable Dance Mode';
+                }
+            }
+        });
+        
+        document.getElementById('danceStyle').addEventListener('change', (e) => {
+            if (this.danceController) {
+                this.danceController.setDanceMode(e.target.value);
+            }
+        });
+        
+        document.getElementById('formationSelect').addEventListener('change', (e) => {
+            if (this.danceController) {
+                this.danceController.currentFormation = e.target.value;
+            }
+        });
+        
+        document.getElementById('colorPalette').addEventListener('change', (e) => {
+            if (this.danceController) {
+                this.danceController.setPalette(e.target.value);
+            }
+        });
+        
+        // Exhibition mode
+        document.getElementById('exhibitionToggle').addEventListener('click', () => {
+            this.toggleExhibitionMode();
+        });
     }
     
     initializeMIDI() {
@@ -141,6 +183,13 @@ class ArtificialLife {
         // Initialize audio input controller if available
         if (typeof AudioInputController !== 'undefined') {
             this.audioInputController = new AudioInputController(this);
+        }
+    }
+    
+    initializeDanceController() {
+        // Initialize dance controller if available
+        if (typeof DanceController !== 'undefined') {
+            this.danceController = new DanceController(this);
         }
     }
     
@@ -419,8 +468,14 @@ class ArtificialLife {
     }
     
     render() {
-        if (!this.session.drawTrails) {
-            this.ctx.fillStyle = '#000000';
+        // Handle trails differently in dance mode
+        if (!this.session.drawTrails || (this.danceController && this.danceController.isEnabled)) {
+            // In dance mode, add a subtle fade effect
+            if (this.danceController && this.danceController.isEnabled) {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            } else {
+                this.ctx.fillStyle = '#000000';
+            }
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
         
@@ -429,16 +484,35 @@ class ArtificialLife {
             const x = lifeform.x * this.cellSize;
             const y = lifeform.y * this.cellSize;
             
-            // Create elegant red color variations
-            const redIntensity = 150 + (lifeform.redColor * 105); // 150-255
-            const greenComponent = Math.floor(lifeform.greenColor * 50); // 0-50
-            const blueComponent = Math.floor(lifeform.blueColor * 30); // 0-30
-            
-            this.ctx.fillStyle = `rgb(${redIntensity}, ${greenComponent}, ${blueComponent})`;
-            this.ctx.shadowColor = `rgb(${redIntensity}, ${greenComponent}, ${blueComponent})`;
-            this.ctx.shadowBlur = 8;
-            
-            this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
+            // Use dance colors if dance mode is active
+            if (this.danceController && this.danceController.isEnabled) {
+                const colors = this.danceController.colorPalettes[this.danceController.currentPalette];
+                const colorIndex = lifeform.id % colors.length;
+                this.ctx.fillStyle = colors[colorIndex];
+                this.ctx.shadowColor = colors[colorIndex];
+                this.ctx.shadowBlur = 12 + (lifeform.beatPulse || 1) * 8;
+                
+                // Render with size variation based on beat pulse
+                const size = this.cellSize * (lifeform.beatPulse || 1);
+                const offset = (size - this.cellSize) / 2;
+                this.ctx.fillRect(x - offset, y - offset, size, size);
+            } else {
+                // Original red color variations
+                const redIntensity = 150 + (lifeform.redColor * 105); // 150-255
+                const greenComponent = Math.floor(lifeform.greenColor * 50); // 0-50
+                const blueComponent = Math.floor(lifeform.blueColor * 30); // 0-30
+                
+                this.ctx.fillStyle = `rgb(${redIntensity}, ${greenComponent}, ${blueComponent})`;
+                this.ctx.shadowColor = `rgb(${redIntensity}, ${greenComponent}, ${blueComponent})`;
+                this.ctx.shadowBlur = 8;
+                
+                this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
+            }
+        }
+        
+        // Render dance effects
+        if (this.danceController && this.danceController.isEnabled) {
+            this.danceController.renderDanceEffects(this.ctx);
         }
     }
     
@@ -470,8 +544,56 @@ class ArtificialLife {
                         frequencyDisplay.textContent = data.volume > 0.1 ? 'Analyzing...' : 'No signal';
                     }
                 }
+                
+                // Send audio data to dance controller
+                if (this.danceController && this.danceController.isEnabled) {
+                    this.danceController.updateFromAudioData(data);
+                }
             }
         }, 100);
+    }
+    
+    toggleExhibitionMode() {
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const btn = document.getElementById('exhibitionToggle');
+        
+        if (!document.fullscreenElement) {
+            // Enter exhibition mode
+            mainContent.requestFullscreen().then(() => {
+                sidebar.style.display = 'none';
+                mainContent.style.width = '100vw';
+                btn.textContent = 'Exit Exhibition';
+                
+                // Auto-enable dance mode in exhibition
+                if (this.danceController && !this.danceController.isEnabled) {
+                    document.getElementById('danceToggle').click();
+                }
+                
+                // Increase canvas size for exhibition
+                this.cellSize = 15;
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gridSize = Math.floor(Math.min(window.innerWidth / this.cellSize, window.innerHeight / this.cellSize));
+                
+                console.log('🎨 Exhibition mode activated!');
+            });
+        } else {
+            // Exit exhibition mode
+            document.exitFullscreen().then(() => {
+                sidebar.style.display = 'flex';
+                mainContent.style.width = '';
+                btn.textContent = 'Exhibition Mode';
+                
+                // Restore normal canvas size
+                this.cellSize = 10;
+                this.gridSize = 64;
+                this.canvas.width = this.gridSize * this.cellSize;
+                this.canvas.height = this.gridSize * this.cellSize;
+                
+                console.log('🎨 Exhibition mode deactivated');
+            });
+        }
     }
 }
 
