@@ -488,14 +488,48 @@ class ArtificialLife {
             if (this.danceController && this.danceController.isEnabled) {
                 const colors = this.danceController.colorPalettes[this.danceController.currentPalette];
                 const colorIndex = lifeform.id % colors.length;
-                this.ctx.fillStyle = colors[colorIndex];
-                this.ctx.shadowColor = colors[colorIndex];
-                this.ctx.shadowBlur = 12 + (lifeform.beatPulse || 1) * 8;
+                let baseColor = colors[colorIndex];
                 
-                // Render with size variation based on beat pulse
-                const size = this.cellSize * (lifeform.beatPulse || 1);
+                // Apply rhythmic color intensity
+                const colorIntensity = lifeform.rhythmicColorIntensity || 1;
+                if (colorIntensity !== 1) {
+                    // Adjust color brightness based on rhythm
+                    const rgb = baseColor.match(/\w\w/g);
+                    if (rgb) {
+                        const r = Math.min(255, parseInt(rgb[0], 16) * colorIntensity);
+                        const g = Math.min(255, parseInt(rgb[1], 16) * colorIntensity);
+                        const b = Math.min(255, parseInt(rgb[2], 16) * colorIntensity);
+                        baseColor = `rgb(${Math.floor(r)}, ${Math.floor(g)}, ${Math.floor(b)})`;
+                    }
+                }
+                
+                this.ctx.fillStyle = baseColor;
+                this.ctx.shadowColor = baseColor;
+                
+                // Enhanced shadow effects
+                let shadowBlur = 12 + (lifeform.beatPulse || 1) * 8;
+                if (lifeform.shimmer && lifeform.shimmer > 1) {
+                    shadowBlur += lifeform.shimmer * 5;
+                }
+                this.ctx.shadowBlur = shadowBlur;
+                
+                // Render with multiple effects
+                let size = this.cellSize * (lifeform.beatPulse || 1);
+                
+                // Apply rhythmic scaling
+                if (lifeform.rhythmicScale) {
+                    size *= lifeform.rhythmicScale;
+                }
+                
                 const offset = (size - this.cellSize) / 2;
                 this.ctx.fillRect(x - offset, y - offset, size, size);
+                
+                // Add extra glow for special beat types
+                if (lifeform.lastKickTime && Date.now() - lifeform.lastKickTime < 100) {
+                    this.ctx.shadowColor = '#FF3030';
+                    this.ctx.shadowBlur = shadowBlur * 1.5;
+                    this.ctx.fillRect(x - offset, y - offset, size, size);
+                }
             } else {
                 // Original red color variations
                 const redIntensity = 150 + (lifeform.redColor * 105); // 150-255
