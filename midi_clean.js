@@ -413,70 +413,70 @@ class MIDIController {
                 console.log(`☢️ Radiation: ${this.alife.session.radiation}%`);
                 break;
                 
-            // === M-AUDIO OXYGEN KNOBS ===
-            case 78: // Knob 1 - Radiation Slider
+            // === M-AUDIO OXYGEN 49 KNOBS - ACTUAL CC NUMBERS ===
+            case 22: // Knob 1 - Radiation Slider (Oxygen 49 CC22)
                 const radiationValue = Math.floor(value * 100 / 127);
                 this.alife.session.radiation = radiationValue;
                 document.getElementById('radiationSlider').value = radiationValue;
                 document.getElementById('radiationValue').textContent = radiationValue;
-                console.log(`☢️ Knob 1: Radiation = ${radiationValue}%`);
+                console.log(`☢️ Knob 1 (CC22): Radiation = ${radiationValue}%`);
                 break;
                 
-            case 80: // Knob 2 - Music Volume Slider
+            case 23: // Knob 2 - Music Volume Slider (Oxygen 49 CC23)
                 const musicVolume = Math.floor(value * 100 / 127);
                 document.getElementById('musicVolume').value = musicVolume;
                 if (this.alife.audioSystem) {
                     this.alife.audioSystem.setMusicVolume(musicVolume / 100);
                 }
-                console.log(`🎵 Knob 2: Music Volume = ${musicVolume}%`);
+                console.log(`🎵 Knob 2 (CC23): Music Volume = ${musicVolume}%`);
                 break;
                 
-            case 81: // Knob 3 - SFX Volume Slider
+            case 26: // Knob 3 - SFX Volume Slider (Oxygen 49 CC26)
                 const sfxVolume = Math.floor(value * 100 / 127);
                 document.getElementById('sfxVolume').value = sfxVolume;
                 if (this.alife.audioSystem) {
                     this.alife.audioSystem.setSfxVolume(sfxVolume / 100);
                 }
-                console.log(`🔊 Knob 3: SFX Volume = ${sfxVolume}%`);
+                console.log(`🔊 Knob 3 (CC26): SFX Volume = ${sfxVolume}%`);
                 break;
                 
-            case 82: // Knob 4 - Ambient Volume Slider
+            case 27: // Knob 4 - Ambient Volume Slider (Oxygen 49 CC27)
                 const ambientVolume = Math.floor(value * 100 / 127);
                 document.getElementById('ambientVolume').value = ambientVolume;
                 if (this.alife.audioSystem) {
                     this.alife.audioSystem.setAmbientVolume(ambientVolume / 100);
                 }
-                console.log(`🌊 Knob 4: Ambient Volume = ${ambientVolume}%`);
+                console.log(`🌊 Knob 4 (CC27): Ambient Volume = ${ambientVolume}%`);
                 break;
                 
-            case 83: // Knob 5 - Audio Sensitivity Slider
+            case 61: // Knob 5 - Audio Sensitivity Slider (Oxygen 49 CC61)
                 const audioSensitivity = (0.1 + (value * 1.9 / 127)).toFixed(1);
                 document.getElementById('audioSensitivity').value = audioSensitivity;
                 if (this.alife.audioInputController) {
                     this.alife.audioInputController.setSensitivity(parseFloat(audioSensitivity));
                 }
-                console.log(`🎤 Knob 5: Audio Sensitivity = ${audioSensitivity}`);
+                console.log(`🎤 Knob 5 (CC61): Audio Sensitivity = ${audioSensitivity}`);
                 break;
                 
-            case 84: // Knob 6 - Pitch Sensitivity Slider
+            case 62: // Knob 6 - Pitch Sensitivity Slider (Oxygen 49 CC62)
                 const pitchSensitivity = (0.1 + (value * 1.9 / 127)).toFixed(1);
                 document.getElementById('pitchSensitivity').value = pitchSensitivity;
                 if (this.alife.audioInputController) {
                     this.alife.audioInputController.setPitchSensitivity(parseFloat(pitchSensitivity));
                 }
-                console.log(`🎹 Knob 6: Pitch Sensitivity = ${pitchSensitivity}`);
+                console.log(`🎹 Knob 6 (CC62): Pitch Sensitivity = ${pitchSensitivity}`);
                 break;
                 
-            case 85: // Knob 7 - Population Limit (simulated slider)
+            case 95: // Knob 7 - Population Limit (Oxygen 49 CC95)
                 const populationLimit = Math.floor(10 + (value * 90 / 127));
                 this.alife.session.populationLimit = populationLimit;
-                console.log(`👥 Knob 7: Population Limit = ${populationLimit}`);
+                console.log(`👥 Knob 7 (CC95): Population Limit = ${populationLimit}`);
                 break;
                 
-            case 86: // Knob 8 - DNA Chaos (simulated slider)
+            case 96: // Knob 8 - DNA Chaos (Oxygen 49 CC96 - if exists)
                 const dnaChaos = Math.floor(value * 50 / 127);
                 this.alife.session.dnaChaosChance = dnaChaos;
-                console.log(`🧬 Knob 8: DNA Chaos = ${dnaChaos}%`);
+                console.log(`🧬 Knob 8 (CC96): DNA Chaos = ${dnaChaos}%`);
                 break;
                 
             // === M-AUDIO OXYGEN TRANSPORT CONTROLS ===
