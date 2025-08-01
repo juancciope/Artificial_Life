@@ -181,14 +181,18 @@ class MIDIController {
     handleNoteOn(note, velocity) {
         console.log(`🎹 Note: ${note}, Velocity: ${velocity} (${this.getNoteNameFromMIDI(note)})`);
         
-        // M-Audio Oxygen 49 Pad Controls - Map to 8 main control buttons
-        // Handle pads FIRST, then keyboard notes for music
+        // M-Audio Oxygen 49 - SMART PAD vs KEYBOARD DETECTION
+        // KEY INSIGHT: Pads = HIGH velocity (hard hits), Keyboard = LOW velocity (gentle press)
         // Actual pad notes: 24, 26, 30, 33, 34, 37, 38, 39
         const padNotes = [24, 26, 30, 33, 34, 37, 38, 39];
-        if (padNotes.includes(note)) {
-            // This is a pad - handle control functions
+        const VELOCITY_THRESHOLD = 80; // Pads >80, Keyboard ≤80
+        
+        if (padNotes.includes(note) && velocity > VELOCITY_THRESHOLD) {
+            // HIGH VELOCITY + PAD NOTE = This is a PAD press → Control functions
+            console.log(`🎛️ PAD DETECTED: Note ${note}, Velocity ${velocity} (>80)`);
         } else {
-            // This is a keyboard note - handle musical performance only
+            // LOW VELOCITY or NON-PAD NOTE = This is KEYBOARD → Musical performance only  
+            console.log(`🎹 KEYBOARD DETECTED: Note ${note}, Velocity ${velocity} (≤80 or non-pad)`);
             this.handleMusicalPerformance(note, velocity);
             return;
         }
@@ -293,13 +297,6 @@ class MIDIController {
     
     // Musical performance handler - ONLY spawns lifeforms, doesn't change canvas
     handleMusicalPerformance(note, velocity) {
-        // Exclude pad notes from musical performance to avoid conflicts
-        const padNotes = [24, 26, 30, 33, 34, 37, 38, 39];
-        if (padNotes.includes(note)) {
-            console.log(`🚫 Ignoring musical performance for pad note: ${this.getNoteNameFromMIDI(note)} (${note})`);
-            return;
-        }
-        
         // Musical notes spawn lifeforms based on velocity
         const intensityLevel = Math.floor(velocity / 32) + 1; // 1-4 lifeforms
         
