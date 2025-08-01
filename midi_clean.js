@@ -293,7 +293,14 @@ class MIDIController {
     
     // Musical performance handler - ONLY spawns lifeforms, doesn't change canvas
     handleMusicalPerformance(note, velocity) {
-        // Musical notes (C3 and above) spawn lifeforms based on velocity
+        // Exclude pad notes from musical performance to avoid conflicts
+        const padNotes = [24, 26, 30, 33, 34, 37, 38, 39];
+        if (padNotes.includes(note)) {
+            console.log(`🚫 Ignoring musical performance for pad note: ${this.getNoteNameFromMIDI(note)} (${note})`);
+            return;
+        }
+        
+        // Musical notes spawn lifeforms based on velocity
         const intensityLevel = Math.floor(velocity / 32) + 1; // 1-4 lifeforms
         
         for (let i = 0; i < intensityLevel; i++) {
