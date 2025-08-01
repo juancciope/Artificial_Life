@@ -710,4 +710,6 @@ class Lifeform {
 // Initialize when page loads
 window.addEventListener('DOMContentLoaded', () => {
     const alife = new ArtificialLife();
+    // Make globally accessible for debugging
+    window.alife = alife;
 });

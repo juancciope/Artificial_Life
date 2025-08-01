@@ -12,6 +12,28 @@ class MIDIController {
             this.midiAccess = await navigator.requestMIDIAccess();
             console.log('MIDI Access granted!');
             
+            // Enhanced device detection logging
+            console.log('🔍 Scanning for MIDI devices...');
+            console.log('📊 Available MIDI inputs:', this.midiAccess.inputs.size);
+            console.log('📊 Available MIDI outputs:', this.midiAccess.outputs.size);
+            
+            // List all available MIDI devices for debugging
+            let deviceCount = 0;
+            for (let input of this.midiAccess.inputs.values()) {
+                deviceCount++;
+                console.log(`📱 Input ${deviceCount}: "${input.name}" (ID: ${input.id})`);
+                console.log(`   State: ${input.state}, Connection: ${input.connection}`);
+            }
+            
+            if (deviceCount === 0) {
+                console.log('⚠️ No MIDI devices found!');
+                console.log('💡 Troubleshooting steps:');
+                console.log('   1. Make sure your M-Audio Oxygen is connected via USB');
+                console.log('   2. Check if drivers are installed (Windows/Mac)');
+                console.log('   3. Try refreshing the page after connecting');
+                console.log('   4. Check if other MIDI software is using the device');
+            }
+            
             // Set up MIDI device listeners
             this.midiAccess.onstatechange = (event) => this.onMIDIStateChange(event);
             
@@ -20,7 +42,7 @@ class MIDIController {
                 this.connectMIDIDevice(input);
             }
             
-            this.updateMIDIStatus('MIDI Ready - Connect your controller!');
+            this.updateMIDIStatus(deviceCount > 0 ? 'MIDI Ready - Controllers connected!' : 'MIDI Ready - No devices found');
             
             // Run connectivity test after 1 second
             setTimeout(() => {
@@ -83,16 +105,47 @@ class MIDIController {
 
     onMIDIStateChange(event) {
         const device = event.port;
+        console.log(`🔄 MIDI State Change: "${device.name}" - State: ${device.state}, Type: ${device.type}`);
+        console.log(`   Connection: ${device.connection}, ID: ${device.id}`);
         
         if (device.type === 'input') {
             if (device.state === 'connected') {
+                console.log(`✅ New device connected! Attempting to initialize...`);
                 this.connectMIDIDevice(device);
             } else if (device.state === 'disconnected') {
                 this.connectedDevices.delete(device.id);
-                console.log(`Disconnected from: ${device.name}`);
+                console.log(`❌ Device disconnected: ${device.name}`);
                 this.updateMIDIStatus('🎹 MIDI Ready - Connect your controller');
             }
         }
+        
+        // Update device count
+        const deviceCount = this.midiAccess.inputs.size;
+        console.log(`📊 Total MIDI devices available: ${deviceCount}`);
+    }
+    
+    // Manual device refresh function (can be called from console)
+    refreshMIDIDevices() {
+        console.log('🔄 Manually refreshing MIDI devices...');
+        console.log('📊 Available MIDI inputs:', this.midiAccess.inputs.size);
+        
+        let deviceCount = 0;
+        for (let input of this.midiAccess.inputs.values()) {
+            deviceCount++;
+            console.log(`📱 Input ${deviceCount}: "${input.name}" (State: ${input.state})`);
+            
+            if (input.state === 'connected' && !this.connectedDevices.has(input.id)) {
+                console.log(`   ➡️ Connecting to: ${input.name}`);
+                this.connectMIDIDevice(input);
+            }
+        }
+        
+        if (deviceCount === 0) {
+            console.log('⚠️ Still no MIDI devices found after refresh');
+            console.log('💡 Try: 1) Unplug and replug your Oxygen 2) Close other MIDI software');
+        }
+        
+        return deviceCount;
     }
 
     handleMIDIMessage(message) {
@@ -859,3 +912,13 @@ class MIDIController {
 
 // Export for use in main app
 window.MIDIController = MIDIController;
+
+// Global helper function for debugging MIDI issues
+window.refreshMIDI = function() {
+    if (window.alife && window.alife.midiController) {
+        return window.alife.midiController.refreshMIDIDevices();
+    } else {
+        console.log('❌ MIDI controller not initialized yet');
+        return 0;
+    }
+};
