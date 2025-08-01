@@ -181,90 +181,94 @@ class MIDIController {
     handleNoteOn(note, velocity) {
         console.log(`🎹 Note: ${note}, Velocity: ${velocity} (${this.getNoteNameFromMIDI(note)})`);
         
-        // Musical performance notes (C3 and above) - ONLY spawn lifeforms
-        if (note >= 60) {
+        // M-Audio Oxygen Pad Controls (36-43) - Map to 8 main control buttons
+        // Handle pads FIRST, then keyboard notes for music
+        if (note >= 36 && note <= 43) {
+            // This is a pad - handle control functions
+        } else {
+            // This is a keyboard note - handle musical performance only
             this.handleMusicalPerformance(note, velocity);
             return;
         }
         
-        // M-Audio Oxygen Pad Controls (36-43) - Clear, ordered mapping
+        // Pad control mapping
         switch(note) {
             case 36: // Pad 1 - Start Life
                 this.flashButton('startBtn');
                 this.alife.startLife();
-                console.log('🚀 Pad 1: Life Started!');
+                console.log('🚀 Pad 1: Start Life');
                 this.createFeedbackMessage('START LIFE', 'midi-feedback-spawn');
                 break;
                 
             case 37: // Pad 2 - Pause Life
                 this.flashButton('pauseBtn');
                 this.alife.pauseLife();
-                console.log('⏸️ Pad 2: Life Paused!');
+                console.log('⏸️ Pad 2: Pause Life');
                 this.createFeedbackMessage('PAUSE LIFE', 'midi-feedback');
                 break;
                 
             case 38: // Pad 3 - Reset Life
                 this.flashButton('resetBtn');
                 this.alife.resetLife();
-                console.log('🔄 Pad 3: Life Reset!');
+                console.log('🔄 Pad 3: Reset Life');
                 this.createFeedbackMessage('RESET LIFE', 'midi-feedback');
                 break;
                 
             case 39: // Pad 4 - Thanos Snap
+                this.flashButton('thanosBtn');
                 this.alife.thanosSnap();
-                console.log('💀 Pad 4: Thanos Snap!');
+                console.log('💀 Pad 4: Thanos Snap');
                 this.createFeedbackMessage('THANOS SNAP!', 'midi-feedback-kill');
                 if (this.alife.audioSystem) {
                     this.alife.audioSystem.playThanosSfx('intense');
                 }
                 break;
                 
-            case 40: // Pad 5 - Toggle Gravity
+            case 40: // Pad 5 - Enable/Disable Audio
+                const audioBtn = document.getElementById('audioToggle');
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.toggle();
+                    audioBtn.textContent = this.alife.audioSystem.isEnabled ? 'Disable Audio' : 'Enable Audio';
+                    console.log(`🔊 Pad 5: Audio ${this.alife.audioSystem.isEnabled ? 'ON' : 'OFF'}`);
+                    this.createFeedbackMessage(`AUDIO ${this.alife.audioSystem.isEnabled ? 'ON' : 'OFF'}`, 'midi-feedback');
+                }
+                break;
+                
+            case 41: // Pad 6 - Toggle Gravity
                 this.alife.session.gravityOn = !this.alife.session.gravityOn;
                 document.getElementById('gravityToggle').checked = this.alife.session.gravityOn;
-                console.log(`🌍 Pad 5: Gravity ${this.alife.session.gravityOn ? 'ON' : 'OFF'}`);
+                console.log(`🌍 Pad 6: Gravity ${this.alife.session.gravityOn ? 'ON' : 'OFF'}`);
                 this.createFeedbackMessage(`GRAVITY ${this.alife.session.gravityOn ? 'ON' : 'OFF'}`, 'midi-feedback');
                 break;
                 
-            case 41: // Pad 6 - Toggle Trails
+            case 42: // Pad 7 - Toggle Trails
                 this.alife.session.drawTrails = !this.alife.session.drawTrails;
                 document.getElementById('trailsToggle').checked = this.alife.session.drawTrails;
-                console.log(`✨ Pad 6: Trails ${this.alife.session.drawTrails ? 'ON' : 'OFF'}`);
+                console.log(`✨ Pad 7: Trails ${this.alife.session.drawTrails ? 'ON' : 'OFF'}`);
                 this.createFeedbackMessage(`TRAILS ${this.alife.session.drawTrails ? 'ON' : 'OFF'}`, 'midi-feedback');
                 break;
                 
-            case 42: // Pad 7 - Toggle Dance Mode
+            case 43: // Pad 8 - Toggle Dance Mode
                 if (this.alife.danceController) {
                     const btn = document.getElementById('danceToggle');
                     if (!this.alife.danceController.isEnabled) {
                         this.alife.danceController.enable();
                         btn.textContent = 'Disable Dance Mode';
-                        console.log('💃 Pad 7: Dance Mode ON!');
+                        console.log('💃 Pad 8: Dance Mode ON');
                         this.createFeedbackMessage('DANCE MODE ON', 'midi-feedback-spawn');
                     } else {
                         this.alife.danceController.disable();
                         btn.textContent = 'Enable Dance Mode';
-                        console.log('🛑 Pad 7: Dance Mode OFF!');
+                        console.log('🛑 Pad 8: Dance Mode OFF');
                         this.createFeedbackMessage('DANCE MODE OFF', 'midi-feedback');
                     }
                 }
                 break;
                 
-            case 43: // Pad 8 - Spawn Lifeforms
-                const spawnCount = Math.floor(velocity / 32) + 1; // 1-4 based on velocity
-                for (let i = 0; i < spawnCount; i++) {
-                    this.alife.createLifeform();
-                }
-                console.log(`🌱 Pad 8: Spawned ${spawnCount} lifeforms (velocity: ${velocity})`);
-                this.createFeedbackMessage(`SPAWN +${spawnCount}`, 'midi-feedback-spawn');
-                break;
-                
-            // Handle unmapped control notes
+            // Unmapped pad/control notes
             default:
-                if (note < 60) {
-                    console.log(`🎛️ Unmapped control note: ${this.getNoteNameFromMIDI(note)} (${note})`);
-                    console.log('💡 M-Audio Oxygen: Use Pads 1-8 for clean control mapping');
-                }
+                console.log(`🎛️ Unmapped pad/control note: ${this.getNoteNameFromMIDI(note)} (${note})`);
+                console.log('💡 M-Audio Oxygen: Pads 1-8 control buttons, keyboard plays music');
                 break;
         }
     }
@@ -410,61 +414,69 @@ class MIDIController {
                 break;
                 
             // === M-AUDIO OXYGEN KNOBS ===
-            case 78: // Knob 1 - Grid Size
-                const oxygenGridSize = Math.floor(32 + (value * 32 / 127));
-                if (oxygenGridSize !== this.alife.gridSize) {
-                    this.alife.gridSize = oxygenGridSize;
-                    this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
-                    this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
-                    console.log(`📐 Grid size: ${this.alife.gridSize}x${this.alife.gridSize}`);
+            case 78: // Knob 1 - Radiation Slider
+                const radiationValue = Math.floor(value * 100 / 127);
+                this.alife.session.radiation = radiationValue;
+                document.getElementById('radiationSlider').value = radiationValue;
+                document.getElementById('radiationValue').textContent = radiationValue;
+                console.log(`☢️ Knob 1: Radiation = ${radiationValue}%`);
+                break;
+                
+            case 80: // Knob 2 - Music Volume Slider
+                const musicVolume = Math.floor(value * 100 / 127);
+                document.getElementById('musicVolume').value = musicVolume;
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setMusicVolume(musicVolume / 100);
                 }
+                console.log(`🎵 Knob 2: Music Volume = ${musicVolume}%`);
                 break;
                 
-            case 80: // Knob 2 - Cell Size
-                this.alife.cellSize = Math.floor(4 + (value * 12 / 127));
-                this.alife.canvas.width = this.alife.gridSize * this.alife.cellSize;
-                this.alife.canvas.height = this.alife.gridSize * this.alife.cellSize;
-                console.log(`🔳 Cell size: ${this.alife.cellSize}px`);
-                break;
-                
-            case 81: // Knob 3 - Visual Intensity
-                this.alife.visualIntensity = Math.floor(2 + (value * 18 / 127));
-                console.log(`✨ Visual intensity: ${this.alife.visualIntensity}`);
-                break;
-                
-            case 82: // Knob 4 - Dance Formation Speed
-                if (this.alife.danceController) {
-                    this.alife.danceController.formationChangeRate = value / 127;
-                    console.log(`💃 Formation change rate: ${Math.round(this.alife.danceController.formationChangeRate * 100)}%`);
+            case 81: // Knob 3 - SFX Volume Slider
+                const sfxVolume = Math.floor(value * 100 / 127);
+                document.getElementById('sfxVolume').value = sfxVolume;
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setSfxVolume(sfxVolume / 100);
                 }
+                console.log(`🔊 Knob 3: SFX Volume = ${sfxVolume}%`);
                 break;
                 
-            case 83: // Knob 5 - Beat Sensitivity
-                if (this.alife.danceController && this.alife.danceController.beatDetector) {
-                    this.alife.danceController.beatDetector.threshold = 1.0 + (value / 127);
-                    console.log(`🥁 Beat sensitivity: ${this.alife.danceController.beatDetector.threshold.toFixed(2)}`);
+            case 82: // Knob 4 - Ambient Volume Slider
+                const ambientVolume = Math.floor(value * 100 / 127);
+                document.getElementById('ambientVolume').value = ambientVolume;
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.setAmbientVolume(ambientVolume / 100);
                 }
+                console.log(`🌊 Knob 4: Ambient Volume = ${ambientVolume}%`);
                 break;
                 
-            case 84: // Knob 6 - Particle Intensity
-                if (this.alife.danceController) {
-                    this.alife.danceController.maxParticles = Math.floor(50 + (value * 150 / 127));
-                    console.log(`✨ Max particles: ${this.alife.danceController.maxParticles}`);
+            case 83: // Knob 5 - Audio Sensitivity Slider
+                const audioSensitivity = (0.1 + (value * 1.9 / 127)).toFixed(1);
+                document.getElementById('audioSensitivity').value = audioSensitivity;
+                if (this.alife.audioInputController) {
+                    this.alife.audioInputController.setSensitivity(parseFloat(audioSensitivity));
                 }
+                console.log(`🎤 Knob 5: Audio Sensitivity = ${audioSensitivity}`);
                 break;
                 
-            case 85: // Knob 7 - Flow Field Speed
-                if (this.alife.danceController) {
-                    this.alife.danceController.flowFieldSpeed = 0.005 + (value * 0.02 / 127);
-                    console.log(`🌊 Flow field speed: ${this.alife.danceController.flowFieldSpeed.toFixed(4)}`);
+            case 84: // Knob 6 - Pitch Sensitivity Slider
+                const pitchSensitivity = (0.1 + (value * 1.9 / 127)).toFixed(1);
+                document.getElementById('pitchSensitivity').value = pitchSensitivity;
+                if (this.alife.audioInputController) {
+                    this.alife.audioInputController.setPitchSensitivity(parseFloat(pitchSensitivity));
                 }
+                console.log(`🎹 Knob 6: Pitch Sensitivity = ${pitchSensitivity}`);
                 break;
                 
-            case 86: // Knob 8 - Color Intensity
-                if (this.alife.danceController) {
-                    this.alife.danceController.colorIntensityMultiplier = 0.5 + (value / 127);
-                    console.log(`🎨 Color intensity: ${this.alife.danceController.colorIntensityMultiplier.toFixed(2)}`);
-                }
+            case 85: // Knob 7 - Population Limit (simulated slider)
+                const populationLimit = Math.floor(10 + (value * 90 / 127));
+                this.alife.session.populationLimit = populationLimit;
+                console.log(`👥 Knob 7: Population Limit = ${populationLimit}`);
+                break;
+                
+            case 86: // Knob 8 - DNA Chaos (simulated slider)
+                const dnaChaos = Math.floor(value * 50 / 127);
+                this.alife.session.dnaChaosChance = dnaChaos;
+                console.log(`🧬 Knob 8: DNA Chaos = ${dnaChaos}%`);
                 break;
                 
             // === M-AUDIO OXYGEN TRANSPORT CONTROLS ===
