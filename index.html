@@ -24,110 +24,140 @@
                     </div>
                     <div class="tab-content">
                         <div id="controls-tab" class="tab-panel active">
-                            <div class="control-section">
-                                <h3>Life Controls</h3>
-                                <button id="startBtn" class="control-btn">Start Life</button>
-                                <button id="pauseBtn" class="control-btn">Pause</button>
-                                <button id="resetBtn" class="control-btn">Reset</button>
-                                <button id="thanosBtn" class="control-btn special">Thanos Snap</button>
-                            </div>
-                            
-                            <div class="control-section">
-                                <h3>Environment</h3>
-                                <label class="toggle">
-                                    <input type="checkbox" id="gravityToggle">
-                                    <span class="toggle-label">Gravity</span>
-                                </label>
-                                <label class="toggle">
-                                    <input type="checkbox" id="trailsToggle">
-                                    <span class="toggle-label">Trails</span>
-                                </label>
-                            </div>
-                            
-                            <div class="control-section">
-                                <h3>Radiation</h3>
-                                <input type="range" id="radiationSlider" min="0" max="100" value="0" class="slider">
-                                <span id="radiationValue">0</span>
-                            </div>
-                            
-                            <div class="control-section">
-                                <h3>Audio System</h3>
-                                <button id="audioToggle" class="control-btn">Enable Audio</button>
-                                <div class="audio-controls">
-                                    <label class="volume-control">
-                                        <span>Music:</span>
-                                        <input type="range" id="musicVolume" min="0" max="100" value="80" class="volume-slider">
+                            <!-- LIFE SIMULATION CATEGORY -->
+                            <div class="control-category">
+                                <h2 class="category-header">🧬 Life Simulation</h2>
+
+                                <div class="control-section">
+                                    <h3>Basic Controls</h3>
+                                    <button id="startBtn" class="control-btn">Start Life</button>
+                                    <button id="pauseBtn" class="control-btn">Pause</button>
+                                    <button id="resetBtn" class="control-btn">Reset</button>
+                                    <button id="thanosBtn" class="control-btn special">Thanos Snap</button>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Environment</h3>
+                                    <label class="toggle">
+                                        <input type="checkbox" id="gravityToggle">
+                                        <span class="toggle-label">Gravity</span>
                                     </label>
-                                    <label class="volume-control">
-                                        <span>SFX:</span>
-                                        <input type="range" id="sfxVolume" min="0" max="100" value="60" class="volume-slider">
-                                    </label>
-                                    <label class="volume-control">
-                                        <span>Ambient:</span>
-                                        <input type="range" id="ambientVolume" min="0" max="100" value="30" class="volume-slider">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="trailsToggle">
+                                        <span class="toggle-label">Trails</span>
                                     </label>
                                 </div>
+
+                                <div class="control-section">
+                                    <h3>Radiation</h3>
+                                    <input type="range" id="radiationSlider" min="0" max="100" value="0" class="slider">
+                                    <span id="radiationValue">0</span>
+                                </div>
                             </div>
-                            
-                            <div class="control-section">
-                                <h3>Audio Input</h3>
-                                <button id="audioInputToggle" class="control-btn">Enable Audio Input</button>
-                                <div class="audio-input-controls">
-                                    <label class="volume-control">
-                                        <span>Sensitivity:</span>
-                                        <input type="range" id="audioSensitivity" min="0.1" max="2.0" step="0.1" value="0.7" class="volume-slider">
-                                    </label>
-                                    <label class="volume-control">
-                                        <span>Pitch Response:</span>
-                                        <input type="range" id="pitchSensitivity" min="0.1" max="2.0" step="0.1" value="0.5" class="volume-slider">
-                                    </label>
-                                    <div class="audio-status">
-                                        <span class="audio-input-status">Audio input ready</span>
+
+                            <!-- AUDIO CATEGORY -->
+                            <div class="control-category">
+                                <h2 class="category-header">🔊 Audio System</h2>
+
+                                <div class="control-section">
+                                    <h3>Audio Output</h3>
+                                    <button id="audioToggle" class="control-btn">Enable Audio</button>
+                                    <div class="audio-controls">
+                                        <label class="volume-control">
+                                            <span>Music:</span>
+                                            <input type="range" id="musicVolume" min="0" max="100" value="80" class="volume-slider">
+                                        </label>
+                                        <label class="volume-control">
+                                            <span>SFX:</span>
+                                            <input type="range" id="sfxVolume" min="0" max="100" value="60" class="volume-slider">
+                                        </label>
+                                        <label class="volume-control">
+                                            <span>Ambient:</span>
+                                            <input type="range" id="ambientVolume" min="0" max="100" value="30" class="volume-slider">
+                                        </label>
                                     </div>
-                                    <div class="audio-visualization">
-                                        <div class="volume-meter">
-                                            <div class="volume-bar" id="volumeBar"></div>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Audio Input</h3>
+                                    <button id="audioInputToggle" class="control-btn">Enable Audio Input</button>
+                                    <div class="audio-input-controls">
+                                        <label class="volume-control">
+                                            <span>Sensitivity:</span>
+                                            <input type="range" id="audioSensitivity" min="0.1" max="2.0" step="0.1" value="0.7" class="volume-slider">
+                                        </label>
+                                        <label class="volume-control">
+                                            <span>Pitch Response:</span>
+                                            <input type="range" id="pitchSensitivity" min="0.1" max="2.0" step="0.1" value="0.5" class="volume-slider">
+                                        </label>
+                                        <div class="audio-status">
+                                            <span class="audio-input-status">Audio input ready</span>
                                         </div>
-                                        <div class="frequency-display" id="frequencyDisplay">No signal</div>
+                                        <div class="audio-visualization">
+                                            <div class="volume-meter">
+                                                <div class="volume-bar" id="volumeBar"></div>
+                                            </div>
+                                            <div class="frequency-display" id="frequencyDisplay">No signal</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="control-section">
-                                <h3>Dance Mode</h3>
-                                <button id="danceToggle" class="control-btn">Enable Dance Mode</button>
-                                <button id="exhibitionToggle" class="control-btn special">Exhibition Mode</button>
-                                <div class="dance-controls">
-                                    <label class="control-label">Dance Style:</label>
-                                    <select id="danceStyle" class="control-select">
-                                        <option value="flow">Flow Field</option>
-                                        <option value="pulse">Pulse</option>
-                                        <option value="spiral">Spiral</option>
-                                        <option value="wave">Wave</option>
-                                        <option value="constellation">Constellation</option>
-                                    </select>
-                                    
-                                    <label class="control-label">Formation:</label>
-                                    <select id="formationSelect" class="control-select">
-                                        <option value="random">Random</option>
-                                        <option value="circle">Circle</option>
-                                        <option value="spiral">Spiral</option>
-                                        <option value="grid">Grid</option>
-                                        <option value="heart">Heart</option>
-                                        <option value="star">Star</option>
-                                    </select>
-                                    
-                                    <label class="control-label">Color Palette:</label>
-                                    <select id="colorPalette" class="control-select">
-                                        <option value="neon">Neon</option>
-                                        <option value="sunset">Sunset</option>
-                                        <option value="ocean">Ocean</option>
-                                        <option value="aurora">Aurora</option>
-                                        <option value="monochrome">Red Monochrome</option>
-                                    </select>
+
+                            <!-- PERFORMANCE & VISUAL CATEGORY -->
+                            <div class="control-category">
+                                <h2 class="category-header">🎭 Performance & Visual</h2>
+
+                                <div class="control-section">
+                                    <h3>Dance Mode</h3>
+                                    <button id="danceToggle" class="control-btn">Enable Dance Mode</button>
+                                    <div class="dance-controls">
+                                        <label class="control-label">Dance Style:</label>
+                                        <select id="danceStyle" class="control-select">
+                                            <option value="flow">Flow Field</option>
+                                            <option value="pulse">Pulse</option>
+                                            <option value="spiral">Spiral</option>
+                                            <option value="wave">Wave</option>
+                                            <option value="constellation">Constellation</option>
+                                        </select>
+
+                                        <label class="control-label">Formation:</label>
+                                        <select id="formationSelect" class="control-select">
+                                            <option value="random">Random</option>
+                                            <option value="circle">Circle</option>
+                                            <option value="spiral">Spiral</option>
+                                            <option value="grid">Grid</option>
+                                            <option value="heart">Heart</option>
+                                            <option value="star">Star</option>
+                                        </select>
+
+                                        <label class="control-label">Color Palette:</label>
+                                        <select id="colorPalette" class="control-select">
+                                            <option value="neon">Neon</option>
+                                            <option value="sunset">Sunset</option>
+                                            <option value="ocean">Ocean</option>
+                                            <option value="aurora">Aurora</option>
+                                            <option value="monochrome">Red Monochrome</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Center Text</h3>
+                                    <label class="control-label">Text Content:</label>
+                                    <input type="text" id="centerText" placeholder="Enter text for center" class="text-input" maxlength="20" style="width: 100%; padding: 8px; background: #1A1A1A; border: 1px solid #333333; border-radius: 4px; color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; height: 38px; margin: 5px 0 15px 0; box-sizing: border-box; display: block;">
+                                    <button id="clearTextBtn" class="control-btn">Clear Text</button>
+                                    <label class="toggle">
+                                        <input type="checkbox" id="textBorderToggle" checked>
+                                        <span class="toggle-label">Text Borders</span>
+                                    </label>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Exhibition</h3>
+                                    <button id="exhibitionToggle" class="control-btn special">Exhibition Mode</button>
                                 </div>
                             </div>
-                            
+
                             <div class="stats-section">
                                 <h3>Statistics</h3>
                                 <div class="stat">Current: <span id="currentCount">0</span></div>
