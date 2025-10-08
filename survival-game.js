@@ -457,10 +457,6 @@ class SurvivalGame {
         this.playerHealth -= amount;
         this.lastHitTime = Date.now();
 
-        if (this.alife.audioSystem) {
-            this.alife.audioSystem.playSfx('combat');
-        }
-
         if (this.playerHealth <= 0) {
             this.gameOver();
         }
@@ -523,10 +519,6 @@ class SurvivalGame {
         });
 
         this.canShoot = false;
-
-        if (this.alife.audioSystem) {
-            this.alife.audioSystem.playSfx('spawn');
-        }
 
         setTimeout(() => {
             this.canShoot = true;
