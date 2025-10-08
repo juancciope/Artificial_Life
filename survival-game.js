@@ -379,16 +379,18 @@ class SurvivalGame {
         // Grid-based movement - only move every N frames
         this.player.moveStepCounter++;
 
-        // Scale movement speed based on grid size to maintain consistent feel
-        // Smaller grids (mobile) need slower movement, larger grids (desktop) need faster
-        const baseGridSize = 50; // Reference grid size
+        // Scale movement delay based on grid size to maintain consistent visual speed
+        // Key insight: smaller grids need MORE delay (slower), larger grids need LESS delay (faster)
+        // This is because on small screens, fewer grid cells means each cell takes up more visual space
+        const baseGridSize = 50; // Reference grid size (desktop)
         const currentGridSize = this.alife.gridSizeX;
         const gridRatio = currentGridSize / baseGridSize;
 
-        // Adjust delay inversely: larger grids = smaller delay (faster movement)
-        // But clamp it to prevent too fast or too slow
-        const scaledDelay = Math.max(3, Math.min(7, Math.floor(this.player.moveStepDelay / gridRatio)));
-        const moveDelay = this.isSpeedBoosted ? 2 : scaledDelay;
+        // Multiply delay by inverse ratio: smaller grids (ratio < 1) = higher delay (slower)
+        // Example: 25 grid (mobile) = 0.5 ratio → delay 5 * (1/0.5) = 10
+        // Example: 100 grid (4K) = 2.0 ratio → delay 5 * (1/2.0) = 2.5
+        const scaledDelay = Math.max(2, Math.min(10, Math.floor(this.player.moveStepDelay * (1 / gridRatio))));
+        const moveDelay = this.isSpeedBoosted ? 1 : scaledDelay;
 
         if (this.player.moveStepCounter >= moveDelay &&
             (this.playerDirection.x !== 0 || this.playerDirection.y !== 0)) {
@@ -507,14 +509,18 @@ class SurvivalGame {
         }
     }
 
-    gameOver() {
+    gameOver(reason = 'death') {
         this.isGameOver = true;
         console.log('🔓 THE SEVENTH SEAL HAS BEEN BROKEN!');
         console.log(`   Time Guarded: ${this.survivalTime}s`);
         console.log(`   Mysteries Preserved: ${this.score}`);
         console.log(`   Shadows Banished: ${this.enemiesKilled}`);
 
-        this.showGameOverScreen();
+        if (reason === 'suicide') {
+            this.showSuicideScreen();
+        } else {
+            this.showGameOverScreen();
+        }
     }
 
     // PS4 Controller Input
@@ -593,7 +599,7 @@ class SurvivalGame {
         if (!this.isActive || this.isGameOver) return;
         console.log('🔓 You have chosen to break the Seventh Seal!');
         this.playerHealth = 0;
-        this.gameOver();
+        this.gameOver('suicide');
     }
 
     render(ctx) {
@@ -725,69 +731,69 @@ class SurvivalGame {
         const timeColor = this.timeRemaining > 30 ? '#00FFFF' : this.timeRemaining > 10 ? '#FFFF00' : '#FF0000';
 
         ui.innerHTML = `
-            <div style="text-align: center; border-bottom: 2px solid #FFFF00; padding-bottom: 15px; margin-bottom: 10px;">
-                <div style="font-size: 20px; font-weight: bold; color: #FFFF00; text-shadow: 0 0 8px #FFFF00; margin-bottom: 10px;">🔒 THE SEVENTH SEAL</div>
-                <div style="font-size: 56px; font-weight: bold; color: #FF0000; text-shadow: 0 0 15px #FF0000, 0 0 30px #FF0000; letter-spacing: 4px; line-height: 1;">${timeStr}</div>
+            <div style="text-align: center; border-bottom: 2px solid #FFFF00; padding-bottom: 12px; margin-bottom: 8px;">
+                <div style="font-size: 18px; font-weight: bold; color: #FFFF00; margin-bottom: 8px;">🔒 THE SEVENTH SEAL</div>
+                <div style="font-size: 48px; font-weight: bold; color: #FF0000; letter-spacing: 3px; line-height: 1;">${timeStr}</div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid #00FF00;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">SCORE</div>
-                    <div style="font-size: 28px; font-weight: bold; color: #00FF00;">${this.score}</div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 4px; border-left: 3px solid #00FF00;">
+                    <div style="font-size: 10px; color: #888; margin-bottom: 3px;">SCORE</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #00FF00;">${this.score}</div>
                 </div>
 
-                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid #FF00FF;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">MYSTERIES COLLECTED</div>
-                    <div style="font-size: 28px; font-weight: bold; color: #FF00FF;">${this.blocksCollected}</div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 4px; border-left: 3px solid #FF00FF;">
+                    <div style="font-size: 10px; color: #888; margin-bottom: 3px;">MYSTERIES</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #FF00FF;">${this.blocksCollected}</div>
                 </div>
 
-                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid #FF6666;">
-                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">SHADOWS BANISHED</div>
-                    <div style="font-size: 28px; font-weight: bold; color: #FF6666;">${this.enemiesKilled}</div>
+                <div style="background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 4px; border-left: 3px solid #FF6666;">
+                    <div style="font-size: 10px; color: #888; margin-bottom: 3px;">SHADOWS BANISHED</div>
+                    <div style="font-size: 22px; font-weight: bold; color: #FF6666;">${this.enemiesKilled}</div>
                 </div>
             </div>
 
-            <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 6px;">
-                <div style="font-size: 14px; color: #AAA; margin-bottom: 10px; font-weight: bold;">GUARDIAN STATUS</div>
-                <div style="margin-bottom: 12px;">
-                    <div style="font-size: 12px; color: #AAA; margin-bottom: 6px;">Health:</div>
-                    <div style="background: #333; height: 28px; border-radius: 4px; overflow: hidden; border: 2px solid #555;">
+            <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                <div style="font-size: 12px; color: #AAA; margin-bottom: 8px; font-weight: bold;">GUARDIAN STATUS</div>
+                <div style="margin-bottom: 10px;">
+                    <div style="font-size: 10px; color: #888; margin-bottom: 4px;">Health:</div>
+                    <div style="background: #333; height: 20px; border-radius: 3px; overflow: hidden; border: 1px solid #555;">
                         <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
                     </div>
-                    <div style="font-size: 18px; color: ${healthColor}; font-weight: bold; margin-top: 6px;">${this.playerHealth}%</div>
+                    <div style="font-size: 14px; color: ${healthColor}; font-weight: bold; margin-top: 4px;">${this.playerHealth}%</div>
                 </div>
-                <div style="display: flex; gap: 15px; font-size: 20px; justify-content: space-around;">
+                <div style="display: flex; gap: 12px; font-size: 18px; justify-content: space-around;">
                     <div style="text-align: center;">
                         <div style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️</div>
-                        <div style="font-size: 10px; color: #888; margin-top: 3px;">Shield</div>
+                        <div style="font-size: 9px; color: #888; margin-top: 2px;">Shield</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡</div>
-                        <div style="font-size: 10px; color: #888; margin-top: 3px;">Speed</div>
+                        <div style="font-size: 9px; color: #888; margin-top: 2px;">Speed</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫</div>
-                        <div style="font-size: 10px; color: #888; margin-top: 3px;">Shoot</div>
+                        <div style="font-size: 9px; color: #888; margin-top: 2px;">Shoot</div>
                     </div>
                 </div>
             </div>
 
-            <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 13px; line-height: 1.8; border: 1px solid #333;">
-                <div style="color: #FFFF00; font-weight: bold; margin-bottom: 10px;">CONTROLS</div>
+            <div style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 11px; line-height: 1.6; border: 1px solid #333;">
+                <div style="color: #FFFF00; font-weight: bold; margin-bottom: 8px; font-size: 12px;">CONTROLS</div>
                 <div style="color: #0FF;">Left Stick/D-Pad</div>
-                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Move Guardian</div>
+                <div style="color: #888; font-size: 10px; margin-bottom: 6px;">Move Guardian</div>
 
                 <div style="color: #0FF;">R1 Button</div>
-                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Arcane Shield</div>
+                <div style="color: #888; font-size: 10px; margin-bottom: 6px;">Arcane Shield</div>
 
                 <div style="color: #0FF;">R2 Button</div>
-                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Seal's Power</div>
+                <div style="color: #888; font-size: 10px; margin-bottom: 6px;">Seal's Power</div>
 
                 <div style="color: #0FF;">☐ Square</div>
-                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Mystic Haste</div>
+                <div style="color: #888; font-size: 10px; margin-bottom: 6px;">Mystic Haste</div>
 
                 <div style="color: #F66;">✖ X Button</div>
-                <div style="color: #888; font-size: 11px;">Break Seal</div>
+                <div style="color: #888; font-size: 10px;">Break Seal</div>
             </div>
         `;
     }
@@ -812,12 +818,16 @@ class SurvivalGame {
 
         overlay.innerHTML = `
             <div style="text-align: center;">
-                <h1 style="font-size: 60px; color: #FF0000; margin: 0;">GAME OVER</h1>
-                <div style="font-size: 24px; margin: 30px 0;">
-                    <div>Survival Time: <span style="color: #00FFFF;">${this.survivalTime}s</span></div>
-                    <div>Final Score: <span style="color: #00FF00;">${this.score}</span></div>
-                    <div>Blocks Collected: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
-                    <div>Enemies Killed: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
+                <h1 style="font-size: 60px; color: #FF0000; margin: 0;">🔓 THE SEAL IS BROKEN</h1>
+                <h2 style="font-size: 28px; color: #FF6666; margin: 20px 0; font-style: italic;">The shadows have breached the seventh mystery...</h2>
+                <div style="font-size: 22px; margin: 30px 0; line-height: 1.8;">
+                    <div>Time Guarded: <span style="color: #00FFFF;">${this.survivalTime}s</span></div>
+                    <div>Mysteries Preserved: <span style="color: #00FF00;">${this.score}</span></div>
+                    <div>Knowledge Collected: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
+                    <div>Shadows Banished: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
+                </div>
+                <div style="font-size: 16px; color: #888; margin: 25px 0; max-width: 500px; margin-left: auto; margin-right: auto; font-style: italic;">
+                    Your watch has ended. The ancient mysteries slip into the darkness of Halloween night.
                 </div>
                 <button id="restartGameBtn" style="
                     background: #FFFF00;
@@ -826,10 +836,11 @@ class SurvivalGame {
                     padding: 15px 40px;
                     font-size: 20px;
                     font-family: 'JetBrains Mono', monospace;
+                    font-weight: bold;
                     border-radius: 5px;
                     cursor: pointer;
                     margin: 10px;
-                ">RESTART (PS Button)</button>
+                ">🔒 SEAL AGAIN (PS Button)</button>
                 <button id="exitGameBtn" style="
                     background: #666;
                     color: white;
@@ -840,7 +851,7 @@ class SurvivalGame {
                     border-radius: 5px;
                     cursor: pointer;
                     margin: 10px;
-                ">EXIT</button>
+                ">LEAVE THE SOCIETY</button>
             </div>
         `;
 
@@ -877,13 +888,16 @@ class SurvivalGame {
 
         overlay.innerHTML = `
             <div style="text-align: center;">
-                <h1 style="font-size: 60px; color: #FFD700; margin: 0;">TIME'S UP!</h1>
-                <h2 style="font-size: 36px; color: #00FF00; margin: 20px 0;">YOU SURVIVED!</h2>
-                <div style="font-size: 24px; margin: 30px 0;">
-                    <div>Final Score: <span style="color: #00FF00;">${this.score}</span></div>
-                    <div>Blocks Collected: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
-                    <div>Enemies Killed: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
-                    <div style="margin-top: 20px; color: #00FFFF;">Health Remaining: ${this.playerHealth}%</div>
+                <h1 style="font-size: 60px; color: #FFD700; margin: 0;">🔒 THE SEAL ENDURES!</h1>
+                <h2 style="font-size: 36px; color: #00FF00; margin: 20px 0;">You have proven yourself a true Guardian!</h2>
+                <div style="font-size: 22px; margin: 30px 0; line-height: 1.8;">
+                    <div>Mysteries Preserved: <span style="color: #00FF00;">${this.score}</span></div>
+                    <div>Knowledge Collected: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
+                    <div>Shadows Banished: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
+                    <div style="margin-top: 20px; color: #00FFFF;">Guardian's Vitality: ${this.playerHealth}%</div>
+                </div>
+                <div style="font-size: 16px; color: #888; margin: 25px 0; max-width: 500px; margin-left: auto; margin-right: auto; font-style: italic;">
+                    Through Halloween's darkest hour, you stood firm. The Seventh Seal remains unbroken, its mysteries safe for another night.
                 </div>
                 <button id="restartGameBtn" style="
                     background: #FFFF00;
@@ -892,10 +906,11 @@ class SurvivalGame {
                     padding: 15px 40px;
                     font-size: 20px;
                     font-family: 'JetBrains Mono', monospace;
+                    font-weight: bold;
                     border-radius: 5px;
                     cursor: pointer;
                     margin: 10px;
-                ">PLAY AGAIN (PS Button)</button>
+                ">🔒 GUARD AGAIN (PS Button)</button>
                 <button id="exitGameBtn" style="
                     background: #666;
                     color: white;
@@ -906,7 +921,77 @@ class SurvivalGame {
                     border-radius: 5px;
                     cursor: pointer;
                     margin: 10px;
-                ">EXIT</button>
+                ">LEAVE THE SOCIETY</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById('restartGameBtn').addEventListener('click', () => {
+            overlay.remove();
+            this.restart();
+        });
+
+        document.getElementById('exitGameBtn').addEventListener('click', () => {
+            overlay.remove();
+            this.stop();
+        });
+    }
+
+    showSuicideScreen() {
+        const overlay = document.createElement('div');
+        overlay.id = 'gameOverOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            font-family: 'JetBrains Mono', monospace;
+            color: white;
+        `;
+
+        overlay.innerHTML = `
+            <div style="text-align: center;">
+                <h1 style="font-size: 60px; color: #8B00FF; margin: 0;">🔓 THE SEVENTH SEAL SHATTERED</h1>
+                <h2 style="font-size: 28px; color: #FF00FF; margin: 20px 0; font-style: italic;">By your own hand, the mysteries are unleashed...</h2>
+                <div style="font-size: 22px; margin: 30px 0; line-height: 1.8;">
+                    <div>Time Guarded: <span style="color: #00FFFF;">${this.survivalTime}s</span></div>
+                    <div>Mysteries Released: <span style="color: #FF00FF;">${this.score}</span></div>
+                    <div>Knowledge Scattered: <span style="color: #8B00FF;">${this.blocksCollected}</span></div>
+                    <div>Shadows Banished: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
+                </div>
+                <div style="font-size: 16px; color: #888; margin: 25px 0; max-width: 500px; margin-left: auto; margin-right: auto; font-style: italic;">
+                    You chose to break the seal yourself. The ancient knowledge spills forth into the Halloween night, neither victory nor defeat—but a choice that cannot be undone.
+                </div>
+                <button id="restartGameBtn" style="
+                    background: #8B00FF;
+                    color: white;
+                    border: none;
+                    padding: 15px 40px;
+                    font-size: 20px;
+                    font-family: 'JetBrains Mono', monospace;
+                    font-weight: bold;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin: 10px;
+                ">🔒 FORGE A NEW SEAL (PS Button)</button>
+                <button id="exitGameBtn" style="
+                    background: #666;
+                    color: white;
+                    border: none;
+                    padding: 15px 40px;
+                    font-size: 20px;
+                    font-family: 'JetBrains Mono', monospace;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin: 10px;
+                ">LEAVE THE SOCIETY</button>
             </div>
         `;
 
