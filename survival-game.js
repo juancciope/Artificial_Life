@@ -403,17 +403,35 @@ class SurvivalGame {
                 continue;
             }
 
-            // Check hit with enemies
-            const key = `${Math.floor(proj.x)},${Math.floor(proj.y)}`;
-            const enemyId = this.alife.grid[key];
+            // Check hit with enemies - check current and adjacent cells
+            const centerX = Math.floor(proj.x);
+            const centerY = Math.floor(proj.y);
 
-            if (enemyId && enemyId !== 'PLAYER') {
-                // Hit enemy
-                this.alife.lifeforms.delete(enemyId);
-                delete this.alife.grid[key];
+            // Check 3x3 area around projectile for better hit detection
+            let hitEnemy = false;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    const checkX = centerX + dx;
+                    const checkY = centerY + dy;
+                    const key = `${checkX},${checkY}`;
+                    const enemyId = this.alife.grid[key];
+
+                    if (enemyId && enemyId !== 'PLAYER') {
+                        // Hit enemy
+                        this.alife.lifeforms.delete(enemyId);
+                        delete this.alife.grid[key];
+                        this.enemiesKilled++;
+                        this.score += 10;
+                        console.log(`💥 Enemy killed! Total kills: ${this.enemiesKilled}`);
+                        hitEnemy = true;
+                        break;
+                    }
+                }
+                if (hitEnemy) break;
+            }
+
+            if (hitEnemy) {
                 this.projectiles.splice(i, 1);
-                this.enemiesKilled++;
-                this.score += 10;
             }
         }
     }
