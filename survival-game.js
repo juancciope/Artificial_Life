@@ -61,6 +61,28 @@ class SurvivalGame {
         this.startTime = 0;
         this.survivalTime = 0;
         this.enemiesKilled = 0;
+        this.blocksCollected = 0;
+
+        // Timer system
+        this.gameTime = 120; // 2 minutes in seconds
+        this.timeRemaining = this.gameTime;
+        this.timerInterval = null;
+
+        // Collectible blocks
+        this.collectibles = [];
+        this.maxCollectibles = 8;
+        this.collectibleColors = [
+            { color: '#FF00FF', name: 'MAGENTA', points: 10 },    // Magenta
+            { color: '#00FFFF', name: 'CYAN', points: 15 },       // Cyan
+            { color: '#FFA500', name: 'ORANGE', points: 20 },     // Orange
+            { color: '#00FF7F', name: 'SPRING', points: 25 },     // Spring Green
+            { color: '#FF1493', name: 'PINK', points: 30 },       // Deep Pink
+            { color: '#7FFF00', name: 'CHARTREUSE', points: 35 }, // Chartreuse
+            { color: '#9370DB', name: 'PURPLE', points: 40 },     // Medium Purple
+            { color: '#FFD700', name: 'GOLD', points: 50 }        // Gold - rare
+        ];
+        this.collectibleSpawnInterval = 3000; // Spawn new collectible every 3 seconds
+        this.lastCollectibleSpawn = 0;
 
         // Movement
         this.playerDirection = { x: 0, y: 0 };
@@ -85,7 +107,21 @@ class SurvivalGame {
         // Reset stats
         this.score = 0;
         this.enemiesKilled = 0;
+        this.blocksCollected = 0;
         this.playerHealth = this.playerMaxHealth;
+        this.timeRemaining = this.gameTime;
+
+        // Clear collectibles
+        this.collectibles = [];
+        this.lastCollectibleSpawn = Date.now();
+
+        // Spawn initial collectibles
+        for (let i = 0; i < 3; i++) {
+            this.spawnCollectible();
+        }
+
+        // Start timer
+        this.startTimer();
 
         // Show game UI
         this.showGameUI();
@@ -95,13 +131,16 @@ class SurvivalGame {
 
     stop() {
         this.isActive = false;
+        this.stopTimer();
         this.hideGameUI();
         console.log('🛑 Survival Game Stopped');
     }
 
     restart() {
         console.log('🔄 Restarting Survival Game...');
+        this.stopTimer();
         this.projectiles = [];
+        this.collectibles = [];
         this.collidingEnemies.clear();
         this.hasShield = false;
         this.isSpeedBoosted = false;
@@ -109,6 +148,33 @@ class SurvivalGame {
         this.speedBoostAvailable = true;
         this.canShoot = true;
         this.start();
+    }
+
+    startTimer() {
+        this.stopTimer(); // Clear any existing timer
+        this.timerInterval = setInterval(() => {
+            if (this.isActive && !this.isGameOver) {
+                this.timeRemaining--;
+
+                if (this.timeRemaining <= 0) {
+                    this.timeUp();
+                }
+            }
+        }, 1000);
+    }
+
+    stopTimer() {
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+    }
+
+    timeUp() {
+        console.log('⏱️ TIME UP!');
+        this.isGameOver = true;
+        this.stopTimer();
+        this.showTimeUpScreen();
     }
 
     createPlayer() {
@@ -159,14 +225,119 @@ class SurvivalGame {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
+    spawnCollectible() {
+        if (this.collectibles.length >= this.maxCollectibles) return;
+
+        // Spawn collectible away from player
+        let x, y;
+        let attempts = 0;
+        do {
+            x = Math.floor(Math.random() * this.alife.gridSizeX);
+            y = Math.floor(Math.random() * this.alife.gridSizeY);
+            attempts++;
+        } while (this.distanceToPlayer(x, y) < 5 && attempts < 50); // Not too close to player
+
+        // Random collectible type (weighted - rarer colors less common)
+        const rand = Math.random();
+        let colorIndex;
+        if (rand < 0.05) colorIndex = 7; // Gold 5%
+        else if (rand < 0.15) colorIndex = 6; // Purple 10%
+        else if (rand < 0.30) colorIndex = 5; // Chartreuse 15%
+        else if (rand < 0.50) colorIndex = 4; // Pink 20%
+        else if (rand < 0.70) colorIndex = 3; // Spring 20%
+        else if (rand < 0.85) colorIndex = 2; // Orange 15%
+        else if (rand < 0.95) colorIndex = 1; // Cyan 10%
+        else colorIndex = 0; // Magenta 5%
+
+        const colorData = this.collectibleColors[colorIndex];
+
+        this.collectibles.push({
+            x: x,
+            y: y,
+            color: colorData.color,
+            name: colorData.name,
+            points: colorData.points,
+            pulsePhase: Math.random() * Math.PI * 2 // Random start for animation
+        });
+
+        console.log(`✨ Spawned ${colorData.name} collectible (+${colorData.points} pts) at (${x}, ${y})`);
+    }
+
+    checkCollectibleCollection() {
+        if (!this.player) return;
+
+        const playerGridX = Math.floor(this.player.x);
+        const playerGridY = Math.floor(this.player.y);
+
+        for (let i = this.collectibles.length - 1; i >= 0; i--) {
+            const collectible = this.collectibles[i];
+
+            // Check if player is on collectible (within 1 cell)
+            const dist = Math.sqrt(
+                Math.pow(playerGridX - collectible.x, 2) +
+                Math.pow(playerGridY - collectible.y, 2)
+            );
+
+            if (dist < 1.5) {
+                // Collect it!
+                this.score += collectible.points;
+                this.blocksCollected++;
+
+                console.log(`🎯 Collected ${collectible.name} +${collectible.points} pts! Total: ${this.score}`);
+
+                // Visual feedback
+                this.createCollectFeedback(collectible);
+
+                // Play sound
+                if (this.alife.audioSystem) {
+                    this.alife.audioSystem.playSfx('spawn');
+                }
+
+                // Remove collectible
+                this.collectibles.splice(i, 1);
+            }
+        }
+    }
+
+    createCollectFeedback(collectible) {
+        const overlay = document.createElement('div');
+        overlay.className = 'collect-feedback';
+        overlay.textContent = `+${collectible.points}`;
+        overlay.style.cssText = `
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: ${collectible.color};
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 9998;
+            text-shadow: 0 0 10px ${collectible.color};
+            animation: collectFeedbackFloat 1s ease-out forwards;
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.remove(), 1000);
+    }
+
     update() {
         if (!this.isActive || this.isGameOver) return;
 
         // Update survival time
         this.survivalTime = Math.floor((Date.now() - this.startTime) / 1000);
 
+        // Spawn new collectibles periodically
+        if (Date.now() - this.lastCollectibleSpawn > this.collectibleSpawnInterval) {
+            this.spawnCollectible();
+            this.lastCollectibleSpawn = Date.now();
+        }
+
         // Update player movement
         this.updatePlayerMovement();
+
+        // Check collectible collection
+        this.checkCollectibleCollection();
 
         // Update projectiles
         this.updateProjectiles();
@@ -409,6 +580,29 @@ class SurvivalGame {
             ctx.shadowBlur = 0;
         }
 
+        // Render collectibles (pulsing animation)
+        const pulseTime = Date.now() * 0.003;
+        for (const collectible of this.collectibles) {
+            const x = collectible.x * this.alife.cellSize;
+            const y = collectible.y * this.alife.cellSize;
+
+            // Pulsing effect
+            const pulse = Math.sin(pulseTime + collectible.pulsePhase) * 0.3 + 1.0;
+            const size = this.alife.cellSize * pulse;
+            const offset = (this.alife.cellSize - size) / 2;
+
+            ctx.fillStyle = collectible.color;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = collectible.color;
+            ctx.fillRect(x + offset, y + offset, size, size);
+            ctx.shadowBlur = 0;
+
+            // Draw border for visibility
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x + offset, y + offset, size, size);
+        }
+
         // Render projectiles
         ctx.fillStyle = this.projectileColor;
         for (const proj of this.projectiles) {
@@ -452,13 +646,19 @@ class SurvivalGame {
         const ui = document.getElementById('survivalGameUI');
         if (!ui) return;
 
-        const healthBar = Math.floor((this.playerHealth / this.playerMaxHealth) * 20);
         const healthColor = this.playerHealth > 60 ? '#00FF00' : this.playerHealth > 30 ? '#FFFF00' : '#FF0000';
+        const minutes = Math.floor(this.timeRemaining / 60);
+        const seconds = this.timeRemaining % 60;
+        const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        const timeColor = this.timeRemaining > 30 ? '#00FFFF' : this.timeRemaining > 10 ? '#FFFF00' : '#FF0000';
 
         ui.innerHTML = `
             <h3 style="margin: 0 0 15px 0; color: #FFFF00;">🎮 SURVIVAL MODE</h3>
-            <div style="margin: 5px 0;">Time: <span style="color: #00FFFF;">${this.survivalTime}s</span></div>
+            <div style="margin: 5px 0; font-size: 20px; font-weight: bold;">
+                Time: <span style="color: ${timeColor};">${timeStr}</span>
+            </div>
             <div style="margin: 5px 0;">Score: <span style="color: #00FF00;">${this.score}</span></div>
+            <div style="margin: 5px 0;">Blocks: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
             <div style="margin: 5px 0;">Kills: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
             <div style="margin: 10px 0 5px 0;">Health:</div>
             <div style="background: #333; height: 20px; border-radius: 3px; overflow: hidden;">
@@ -468,6 +668,9 @@ class SurvivalGame {
                 🛡️ Shield: ${this.shieldAvailable ? '✓' : '⌛'}<br>
                 ⚡ Speed: ${this.speedBoostAvailable ? '✓' : '⌛'}<br>
                 🔫 Shoot: ${this.canShoot ? '✓' : '⌛'}
+            </div>
+            <div style="margin: 10px 0 5px 0; font-size: 10px; color: #666;">
+                Collectibles: ${this.collectibles.length}/${this.maxCollectibles}
             </div>
         `;
     }
@@ -496,6 +699,7 @@ class SurvivalGame {
                 <div style="font-size: 24px; margin: 30px 0;">
                     <div>Survival Time: <span style="color: #00FFFF;">${this.survivalTime}s</span></div>
                     <div>Final Score: <span style="color: #00FF00;">${this.score}</span></div>
+                    <div>Blocks Collected: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
                     <div>Enemies Killed: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
                 </div>
                 <button id="restartGameBtn" style="
@@ -509,6 +713,72 @@ class SurvivalGame {
                     cursor: pointer;
                     margin: 10px;
                 ">RESTART (Triangle)</button>
+                <button id="exitGameBtn" style="
+                    background: #666;
+                    color: white;
+                    border: none;
+                    padding: 15px 40px;
+                    font-size: 20px;
+                    font-family: 'JetBrains Mono', monospace;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin: 10px;
+                ">EXIT</button>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document.getElementById('restartGameBtn').addEventListener('click', () => {
+            overlay.remove();
+            this.restart();
+        });
+
+        document.getElementById('exitGameBtn').addEventListener('click', () => {
+            overlay.remove();
+            this.stop();
+        });
+    }
+
+    showTimeUpScreen() {
+        const overlay = document.createElement('div');
+        overlay.id = 'gameOverOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            font-family: 'JetBrains Mono', monospace;
+            color: white;
+        `;
+
+        overlay.innerHTML = `
+            <div style="text-align: center;">
+                <h1 style="font-size: 60px; color: #FFD700; margin: 0;">TIME'S UP!</h1>
+                <h2 style="font-size: 36px; color: #00FF00; margin: 20px 0;">YOU SURVIVED!</h2>
+                <div style="font-size: 24px; margin: 30px 0;">
+                    <div>Final Score: <span style="color: #00FF00;">${this.score}</span></div>
+                    <div>Blocks Collected: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
+                    <div>Enemies Killed: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
+                    <div style="margin-top: 20px; color: #00FFFF;">Health Remaining: ${this.playerHealth}%</div>
+                </div>
+                <button id="restartGameBtn" style="
+                    background: #FFFF00;
+                    color: black;
+                    border: none;
+                    padding: 15px 40px;
+                    font-size: 20px;
+                    font-family: 'JetBrains Mono', monospace;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin: 10px;
+                ">PLAY AGAIN (Triangle)</button>
                 <button id="exitGameBtn" style="
                     background: #666;
                     color: white;
