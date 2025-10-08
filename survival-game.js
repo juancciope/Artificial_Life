@@ -94,6 +94,11 @@ class SurvivalGame {
         this.isGameOver = false;
         this.startTime = Date.now();
 
+        // Ensure animation loop is running
+        if (!this.alife.isRunning) {
+            this.alife.startLife();
+        }
+
         // Clear existing lifeforms
         this.alife.lifeforms.clear();
         this.alife.grid = {};
