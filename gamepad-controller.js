@@ -315,6 +315,11 @@ class GamepadController {
     }
 
     checkAnalogTriggers() {
+        // Disable trigger controls in survival mode
+        if (this.alife.survivalGame && this.alife.survivalGame.isActive) {
+            return;
+        }
+
         // L2 - Population Limit (0.0 to 1.0)
         const l2Value = this.gamepad.buttons[this.buttons.L2].value;
         if (l2Value > this.triggerThreshold) {
@@ -472,6 +477,25 @@ class GamepadController {
 
             case this.buttons.DPAD_RIGHT:
                 game.movePlayer(1, 0);
+                break;
+
+            // Options/Share - Exit survival game
+            case this.buttons.OPTIONS:
+            case this.buttons.SHARE:
+                game.stop();
+                this.createFeedbackMessage('EXITED SURVIVAL MODE', 'gamepad-feedback');
+                break;
+
+            // All other buttons are disabled in survival mode
+            case this.buttons.PS:
+            case this.buttons.L1:
+            case this.buttons.R1:
+            case this.buttons.L2:
+            case this.buttons.R2:
+            case this.buttons.L3:
+            case this.buttons.R3:
+                // Ignore these buttons during survival mode
+                console.log(`🎮 Button ${buttonIndex} disabled in survival mode`);
                 break;
         }
     }

@@ -219,7 +219,7 @@ class SurvivalGame {
                 y = Math.floor(Math.random() * this.alife.gridSizeY);
             } while (this.distanceToPlayer(x, y) < 10); // Not too close
 
-            this.alife.createLifeformAt(x, y);
+            this.alife.createLifeform(x, y);
         }
     }
 
