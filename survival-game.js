@@ -403,31 +403,35 @@ class SurvivalGame {
                 continue;
             }
 
-            // Check hit with enemies - check current and adjacent cells
-            const centerX = Math.floor(proj.x);
-            const centerY = Math.floor(proj.y);
-
-            // Check 3x3 area around projectile for better hit detection
+            // Check hit with enemies - check all lifeforms directly
             let hitEnemy = false;
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    const checkX = centerX + dx;
-                    const checkY = centerY + dy;
-                    const key = `${checkX},${checkY}`;
-                    const enemyId = this.alife.grid[key];
+            const projGridX = Math.floor(proj.x);
+            const projGridY = Math.floor(proj.y);
 
-                    if (enemyId && enemyId !== 'PLAYER') {
-                        // Hit enemy
-                        this.alife.lifeforms.delete(enemyId);
-                        delete this.alife.grid[key];
-                        this.enemiesKilled++;
-                        this.score += 10;
-                        console.log(`💥 Enemy killed! Total kills: ${this.enemiesKilled}`);
-                        hitEnemy = true;
-                        break;
-                    }
+            for (const [enemyId, enemy] of this.alife.lifeforms.entries()) {
+                // Skip player
+                if (enemy.isPlayer) continue;
+
+                const enemyGridX = Math.floor(enemy.x);
+                const enemyGridY = Math.floor(enemy.y);
+
+                // Check if projectile is on same grid cell as enemy
+                const distance = Math.sqrt(
+                    Math.pow(projGridX - enemyGridX, 2) +
+                    Math.pow(projGridY - enemyGridY, 2)
+                );
+
+                if (distance < 1.5) {
+                    // Hit enemy!
+                    const key = `${enemyGridX},${enemyGridY}`;
+                    this.alife.lifeforms.delete(enemyId);
+                    delete this.alife.grid[key];
+                    this.enemiesKilled++;
+                    this.score += 10;
+                    console.log(`💥 Enemy killed at (${enemyGridX},${enemyGridY})! Total: ${this.enemiesKilled}, Score: ${this.score}`);
+                    hitEnemy = true;
+                    break;
                 }
-                if (hitEnemy) break;
             }
 
             if (hitEnemy) {

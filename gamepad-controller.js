@@ -449,8 +449,9 @@ class GamepadController {
                 break;
 
             case this.buttons.TRIANGLE:
-                // Triangle - disabled in survival mode
-                console.log(`🎮 Triangle button disabled in survival mode`);
+                // Triangle - Suicide/Instant Death
+                game.instantDeath();
+                this.createFeedbackMessage('INSTANT DEATH!', 'gamepad-feedback-kill');
                 break;
 
             case this.buttons.SQUARE:
@@ -482,10 +483,14 @@ class GamepadController {
                 this.createFeedbackMessage('EXITED SURVIVAL MODE', 'gamepad-feedback');
                 break;
 
-            // PS Button - Restart game
+            // PS Button - Restart game (only when game over)
             case this.buttons.PS:
-                game.restart();
-                this.createFeedbackMessage('GAME RESTARTED', 'gamepad-feedback-spawn');
+                if (game.isGameOver) {
+                    game.restart();
+                    this.createFeedbackMessage('GAME RESTARTED', 'gamepad-feedback-spawn');
+                } else {
+                    console.log('🎮 PS button only works when game is over');
+                }
                 break;
 
             // All other buttons are disabled in survival mode
