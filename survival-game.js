@@ -135,7 +135,8 @@ class SurvivalGame {
         // Start timer
         this.startTimer();
 
-        // Show game UI
+        // Hide sidebar menu and show game UI in its place
+        this.hideSidebar();
         this.showGameUI();
 
         console.log('✅ The watch begins. Guard the Seventh Seal!');
@@ -145,6 +146,7 @@ class SurvivalGame {
         this.isActive = false;
         this.stopTimer();
         this.hideGameUI();
+        this.showSidebar();
         console.log('🛑 The watch has ended. The seal rests.');
     }
 
@@ -376,7 +378,17 @@ class SurvivalGame {
 
         // Grid-based movement - only move every N frames
         this.player.moveStepCounter++;
-        const moveDelay = this.isSpeedBoosted ? 2 : this.player.moveStepDelay;
+
+        // Scale movement speed based on grid size to maintain consistent feel
+        // Smaller grids (mobile) need slower movement, larger grids (desktop) need faster
+        const baseGridSize = 50; // Reference grid size
+        const currentGridSize = this.alife.gridSizeX;
+        const gridRatio = currentGridSize / baseGridSize;
+
+        // Adjust delay inversely: larger grids = smaller delay (faster movement)
+        // But clamp it to prevent too fast or too slow
+        const scaledDelay = Math.max(3, Math.min(7, Math.floor(this.player.moveStepDelay / gridRatio)));
+        const moveDelay = this.isSpeedBoosted ? 2 : scaledDelay;
 
         if (this.player.moveStepCounter >= moveDelay &&
             (this.playerDirection.x !== 0 || this.playerDirection.y !== 0)) {
@@ -655,32 +667,44 @@ class SurvivalGame {
             ui = document.createElement('div');
             ui.id = 'survivalGameUI';
 
-            // Get canvas position to align with it
-            const canvas = this.alife.canvas;
-            const canvasRect = canvas.getBoundingClientRect();
-
+            // Position in left sidebar area (where menu was)
             ui.style.cssText = `
                 position: fixed;
-                top: ${canvasRect.top - 160}px;
-                left: ${canvasRect.left}px;
-                width: ${canvasRect.width}px;
+                top: 0;
+                left: 0;
+                width: 340px;
+                height: 100vh;
                 background: rgba(0, 0, 0, 0.95);
                 color: white;
-                padding: 15px 20px;
+                padding: 20px;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 12px;
                 z-index: 1000;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
-                border: 2px solid #FFFF00;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+                gap: 20px;
+                border-right: 2px solid #FFFF00;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.8);
                 box-sizing: border-box;
+                overflow-y: auto;
             `;
             document.body.appendChild(ui);
         }
         ui.style.display = 'flex';
+    }
+
+    hideSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.style.display = 'none';
+        }
+    }
+
+    showSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.style.display = 'flex';
+        }
     }
 
     hideGameUI() {
@@ -699,36 +723,69 @@ class SurvivalGame {
         const timeColor = this.timeRemaining > 30 ? '#00FFFF' : this.timeRemaining > 10 ? '#FFFF00' : '#FF0000';
 
         ui.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 25px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #FFFF00; text-shadow: 0 0 8px #FFFF00;">🔒 THE SEVENTH SEAL</div>
-                    <div style="font-size: 48px; font-weight: bold; color: #FF0000; text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000; letter-spacing: 3px;">${timeStr}</div>
-                    <div style="font-size: 20px; font-weight: bold;">Score: <span style="color: #00FF00;">${this.score}</span></div>
-                    <div style="font-size: 20px; font-weight: bold;">Blocks: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
-                    <div style="font-size: 20px; font-weight: bold;">Kills: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
+            <div style="text-align: center; border-bottom: 2px solid #FFFF00; padding-bottom: 15px; margin-bottom: 10px;">
+                <div style="font-size: 20px; font-weight: bold; color: #FFFF00; text-shadow: 0 0 8px #FFFF00; margin-bottom: 10px;">🔒 THE SEVENTH SEAL</div>
+                <div style="font-size: 56px; font-weight: bold; color: #FF0000; text-shadow: 0 0 15px #FF0000, 0 0 30px #FF0000; letter-spacing: 4px; line-height: 1;">${timeStr}</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid #00FF00;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">SCORE</div>
+                    <div style="font-size: 28px; font-weight: bold; color: #00FF00;">${this.score}</div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <div style="display: flex; align-items: center; gap: 12px; font-size: 18px;">
-                        <span style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️${this.shieldAvailable ? '✓' : '⌛'}</span>
-                        <span style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡${this.speedBoostAvailable ? '✓' : '⌛'}</span>
-                        <span style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫${this.canShoot ? '✓' : '⌛'}</span>
+
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid #FF00FF;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">MYSTERIES COLLECTED</div>
+                    <div style="font-size: 28px; font-weight: bold; color: #FF00FF;">${this.blocksCollected}</div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid #FF6666;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 5px;">SHADOWS BANISHED</div>
+                    <div style="font-size: 28px; font-weight: bold; color: #FF6666;">${this.enemiesKilled}</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 6px;">
+                <div style="font-size: 14px; color: #AAA; margin-bottom: 10px; font-weight: bold;">GUARDIAN STATUS</div>
+                <div style="margin-bottom: 12px;">
+                    <div style="font-size: 12px; color: #AAA; margin-bottom: 6px;">Health:</div>
+                    <div style="background: #333; height: 28px; border-radius: 4px; overflow: hidden; border: 2px solid #555;">
+                        <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 18px; color: #AAA; font-weight: bold;">Health:</span>
-                        <div style="background: #333; width: 180px; height: 24px; border-radius: 4px; overflow: hidden; border: 2px solid #555;">
-                            <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
-                        </div>
-                        <span style="font-size: 20px; color: ${healthColor}; font-weight: bold; min-width: 50px;">${this.playerHealth}%</span>
+                    <div style="font-size: 18px; color: ${healthColor}; font-weight: bold; margin-top: 6px;">${this.playerHealth}%</div>
+                </div>
+                <div style="display: flex; gap: 15px; font-size: 20px; justify-content: space-around;">
+                    <div style="text-align: center;">
+                        <div style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️</div>
+                        <div style="font-size: 10px; color: #888; margin-top: 3px;">Shield</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡</div>
+                        <div style="font-size: 10px; color: #888; margin-top: 3px;">Speed</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫</div>
+                        <div style="font-size: 10px; color: #888; margin-top: 3px;">Shoot</div>
                     </div>
                 </div>
             </div>
-            <div style="font-size: 16px; color: #AAA; padding: 8px 0; border-top: 2px solid #444;">
-                <span style="color: #FFF; font-weight: bold;">Controls:</span>
-                <span style="color: #0FF; margin: 0 8px;">Left Stick/D-Pad: Move</span> |
-                <span style="color: #0FF; margin: 0 8px;">R1: Shield</span> |
-                <span style="color: #0FF; margin: 0 8px;">R2: Shoot</span> |
-                <span style="color: #0FF; margin: 0 8px;">☐ (Square): Speed Boost</span> |
-                <span style="color: #F66; margin: 0 8px;">✖ (X): Break Seal (Restart)</span>
+
+            <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 6px; font-size: 13px; line-height: 1.8; border: 1px solid #333;">
+                <div style="color: #FFFF00; font-weight: bold; margin-bottom: 10px;">CONTROLS</div>
+                <div style="color: #0FF;">Left Stick/D-Pad</div>
+                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Move Guardian</div>
+
+                <div style="color: #0FF;">R1 Button</div>
+                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Arcane Shield</div>
+
+                <div style="color: #0FF;">R2 Button</div>
+                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Seal's Power</div>
+
+                <div style="color: #0FF;">☐ Square</div>
+                <div style="color: #888; font-size: 11px; margin-bottom: 8px;">Mystic Haste</div>
+
+                <div style="color: #F66;">✖ X Button</div>
+                <div style="color: #888; font-size: 11px;">Break Seal</div>
             </div>
         `;
     }
