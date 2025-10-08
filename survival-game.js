@@ -457,28 +457,25 @@ class SurvivalGame {
         const playerGridX = Math.floor(this.player.x);
         const playerGridY = Math.floor(this.player.y);
 
-        this.collidingEnemies.clear();
+        // Check if player is on same cell as any enemy
+        let hitByEnemy = false;
+        for (const [enemyId, enemy] of this.alife.lifeforms.entries()) {
+            if (enemy.isPlayer) continue;
 
-        // Check 3x3 area around player
-        for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                const checkX = playerGridX + dx;
-                const checkY = playerGridY + dy;
-                const key = `${checkX},${checkY}`;
-                const enemyId = this.alife.grid[key];
+            const enemyGridX = Math.floor(enemy.x);
+            const enemyGridY = Math.floor(enemy.y);
 
-                if (enemyId && enemyId !== 'PLAYER') {
-                    this.collidingEnemies.add(enemyId);
-                }
+            // Check if on same grid cell
+            if (enemyGridX === playerGridX && enemyGridY === playerGridY) {
+                hitByEnemy = true;
+                console.log(`💥 Hit by enemy! Health: ${this.playerHealth}%`);
+                break;
             }
         }
 
-        // Take damage if 3+ enemies nearby
-        if (this.collidingEnemies.size >= 3) {
-            this.takeDamage(20);
-        } else if (this.collidingEnemies.size > 0) {
-            // Light damage from 1-2 enemies
-            this.takeDamage(5);
+        // Take 50% damage per hit (2 hits = death)
+        if (hitByEnemy) {
+            this.takeDamage(50);
         }
     }
 
