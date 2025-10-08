@@ -653,21 +653,22 @@ class SurvivalGame {
             const canvasRect = canvas.getBoundingClientRect();
 
             ui.style.cssText = `
-                position: absolute;
-                top: ${canvasRect.top}px;
+                position: fixed;
+                top: ${canvasRect.top - 120}px;
                 left: ${canvasRect.left}px;
                 width: ${canvasRect.width}px;
-                background: rgba(0, 0, 0, 0.9);
+                background: rgba(0, 0, 0, 0.95);
                 color: white;
-                padding: 10px 20px;
+                padding: 15px 20px;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 12px;
                 z-index: 1000;
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
-                border-bottom: 2px solid #FFFF00;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+                border: 2px solid #FFFF00;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.8);
                 box-sizing: border-box;
             `;
             document.body.appendChild(ui);
