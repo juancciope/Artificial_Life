@@ -40,6 +40,7 @@ class SurvivalGame {
         this.shieldDuration = 3000; // 3 seconds
         this.shieldCooldown = 5000; // 5 second cooldown
         this.shieldAvailable = true;
+        this.shieldCooldownEnd = 0; // Timestamp when shield will be ready
         this.shieldColor = '#00FFFF'; // Cyan
 
         // Speed boost system
@@ -48,11 +49,13 @@ class SurvivalGame {
         this.speedBoostDuration = 2000; // 2 seconds
         this.speedBoostCooldown = 4000; // 4 second cooldown
         this.speedBoostAvailable = true;
+        this.speedBoostCooldownEnd = 0; // Timestamp when speed boost will be ready
 
         // Shooting system
         this.projectiles = [];
         this.shootCooldown = 500; // 0.5 second between shots
         this.canShoot = true;
+        this.shootCooldownEnd = 0; // Timestamp when can shoot again
         this.projectileSpeed = 0.8;
         this.projectileColor = '#00FF00'; // Green
 
@@ -220,7 +223,7 @@ class SurvivalGame {
             },
             // Grid-based movement
             moveStepCounter: 0,
-            moveStepDelay: 5 // Move every N frames for grid-based feel
+            moveStepDelay: 8 // Base delay - will be scaled by screen size
         };
 
         // Add to lifeforms
@@ -379,18 +382,21 @@ class SurvivalGame {
         // Grid-based movement - only move every N frames
         this.player.moveStepCounter++;
 
-        // Scale movement delay based on grid size to maintain consistent visual speed
-        // Key insight: smaller grids need MORE delay (slower), larger grids need LESS delay (faster)
-        // This is because on small screens, fewer grid cells means each cell takes up more visual space
-        const baseGridSize = 50; // Reference grid size (desktop)
-        const currentGridSize = this.alife.gridSizeX;
-        const gridRatio = currentGridSize / baseGridSize;
+        // Scale movement delay based on CELL SIZE (pixels per cell) to maintain consistent visual speed
+        // The key insight: movement speed should be based on pixels traveled, not grid cells
+        // Small screens: fewer cells BUT larger cell sizes (more pixels per cell) = need MORE delay
+        // Large screens: more cells BUT smaller cell sizes (fewer pixels per cell) = need LESS delay
 
-        // Multiply delay by inverse ratio: smaller grids (ratio < 1) = higher delay (slower)
-        // Example: 25 grid (mobile) = 0.5 ratio → delay 5 * (1/0.5) = 10
-        // Example: 100 grid (4K) = 2.0 ratio → delay 5 * (1/2.0) = 2.5
-        const scaledDelay = Math.max(2, Math.min(10, Math.floor(this.player.moveStepDelay * (1 / gridRatio))));
-        const moveDelay = this.isSpeedBoosted ? 1 : scaledDelay;
+        const cellSize = this.alife.cellSize; // Current pixels per cell
+        const baseCellSize = 10; // Reference cell size (typical desktop)
+
+        // Scale delay proportionally to cell size
+        // Small screen: cellSize=20px → delay = 8 * (20/10) = 16 frames (slower)
+        // Desktop: cellSize=10px → delay = 8 * (10/10) = 8 frames (normal)
+        // Large screen: cellSize=5px → delay = 8 * (5/10) = 4 frames (faster)
+        const cellSizeRatio = cellSize / baseCellSize;
+        const scaledDelay = Math.max(3, Math.min(20, Math.floor(this.player.moveStepDelay * cellSizeRatio)));
+        const moveDelay = this.isSpeedBoosted ? Math.max(1, Math.floor(scaledDelay / 3)) : scaledDelay;
 
         if (this.player.moveStepCounter >= moveDelay &&
             (this.playerDirection.x !== 0 || this.playerDirection.y !== 0)) {
@@ -541,8 +547,11 @@ class SurvivalGame {
             this.hasShield = false;
             console.log('🛡️ Shield expired');
 
+            this.shieldCooldownEnd = Date.now() + this.shieldCooldown;
+
             setTimeout(() => {
                 this.shieldAvailable = true;
+                this.shieldCooldownEnd = 0;
                 console.log('🛡️ Shield ready');
             }, this.shieldCooldown);
         }, this.shieldDuration);
@@ -570,9 +579,11 @@ class SurvivalGame {
         });
 
         this.canShoot = false;
+        this.shootCooldownEnd = Date.now() + this.shootCooldown;
 
         setTimeout(() => {
             this.canShoot = true;
+            this.shootCooldownEnd = 0;
         }, this.shootCooldown);
     }
 
@@ -588,8 +599,11 @@ class SurvivalGame {
             this.isSpeedBoosted = false;
             console.log('⚡ Speed boost expired');
 
+            this.speedBoostCooldownEnd = Date.now() + this.speedBoostCooldown;
+
             setTimeout(() => {
                 this.speedBoostAvailable = true;
+                this.speedBoostCooldownEnd = 0;
                 console.log('⚡ Speed boost ready');
             }, this.speedBoostCooldown);
         }, this.speedBoostDuration);
@@ -766,14 +780,23 @@ class SurvivalGame {
                     <div style="text-align: center;">
                         <div style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️</div>
                         <div style="font-size: 9px; color: #888; margin-top: 2px;">Shield</div>
+                        ${!this.shieldAvailable && this.shieldCooldownEnd > 0 ?
+                            `<div style="font-size: 8px; color: #F66; font-weight: bold;">${Math.ceil((this.shieldCooldownEnd - Date.now()) / 1000)}s</div>` :
+                            '<div style="height: 12px;"></div>'}
                     </div>
                     <div style="text-align: center;">
                         <div style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡</div>
                         <div style="font-size: 9px; color: #888; margin-top: 2px;">Speed</div>
+                        ${!this.speedBoostAvailable && this.speedBoostCooldownEnd > 0 ?
+                            `<div style="font-size: 8px; color: #F66; font-weight: bold;">${Math.ceil((this.speedBoostCooldownEnd - Date.now()) / 1000)}s</div>` :
+                            '<div style="height: 12px;"></div>'}
                     </div>
                     <div style="text-align: center;">
                         <div style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫</div>
                         <div style="font-size: 9px; color: #888; margin-top: 2px;">Shoot</div>
+                        ${!this.canShoot && this.shootCooldownEnd > 0 ?
+                            `<div style="font-size: 8px; color: #F66; font-weight: bold;">${Math.max(0, Math.ceil((this.shootCooldownEnd - Date.now()) / 1000))}s</div>` :
+                            '<div style="height: 12px;"></div>'}
                     </div>
                 </div>
             </div>
