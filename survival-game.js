@@ -667,19 +667,15 @@ class SurvivalGame {
             ui = document.createElement('div');
             ui.id = 'survivalGameUI';
 
-            // Position in left sidebar area (where menu was)
+            // Style it exactly like the sidebar (part of flex container, not overlay)
             ui.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 340px;
-                height: 100vh;
+                width: 350px;
+                min-width: 350px;
                 background: rgba(0, 0, 0, 0.95);
                 color: white;
                 padding: 20px;
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 12px;
-                z-index: 1000;
                 display: flex;
                 flex-direction: column;
                 gap: 20px;
@@ -687,8 +683,14 @@ class SurvivalGame {
                 box-shadow: 4px 0 20px rgba(0,0,0,0.8);
                 box-sizing: border-box;
                 overflow-y: auto;
+                height: 100vh;
             `;
-            document.body.appendChild(ui);
+
+            // Insert at the beginning of container (where sidebar was)
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertBefore(ui, container.firstChild);
+            }
         }
         ui.style.display = 'flex';
     }
