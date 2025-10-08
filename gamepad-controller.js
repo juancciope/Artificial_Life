@@ -439,24 +439,24 @@ class GamepadController {
 
         switch(buttonIndex) {
             case this.buttons.CROSS:
-                // X - Shield
-                game.activateShield();
-                break;
-
-            case this.buttons.CIRCLE:
-                // O - Shoot
-                game.shoot(this.playerDirection?.x, this.playerDirection?.y);
-                break;
-
-            case this.buttons.TRIANGLE:
-                // Triangle - Suicide/Instant Death
+                // X - Suicide/Break the Seventh Seal
                 game.instantDeath();
-                this.createFeedbackMessage('INSTANT DEATH!', 'gamepad-feedback-kill');
+                this.createFeedbackMessage('SEVENTH SEAL BROKEN!', 'gamepad-feedback-kill');
                 break;
 
             case this.buttons.SQUARE:
                 // Square - Speed Boost
                 game.activateSpeedBoost();
+                break;
+
+            case this.buttons.R1:
+                // R1 - Shield
+                game.activateShield();
+                break;
+
+            case this.buttons.R2:
+                // R2 - Shoot
+                game.shoot(this.playerDirection?.x, this.playerDirection?.y);
                 break;
 
             // D-Pad also controls movement (alternative to left stick)

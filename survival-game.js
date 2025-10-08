@@ -1,19 +1,24 @@
 /**
- * Survival Game Mode for Artificial Life
- * Pac-Man style survival game controlled with PS4 DualShock 4
+ * THE SEVENTH SEAL - Halloween 2025
+ * Nashville Scares: Survival Game Mode
+ *
+ * Legend:
+ * You are a keeper of the Seventh Seal, the guardian of ancient mysteries.
+ * Face the shadows of Halloween night and protect the seal from darkness.
+ * If you fall, the Seventh Seal is broken, releasing the mysteries within.
  *
  * Rules:
- * - You are the YELLOW lifeform (strong)
- * - Other lifeforms are RED (enemies)
- * - Get hit by 3 enemies at once = DEATH
- * - Survive as long as possible
+ * - You are the YELLOW keeper (guardian of the seal)
+ * - RED entities are the darkness trying to break the seal
+ * - Survive to protect the ancient wisdom
+ * - Fall and the Seventh Seal breaks
  *
  * Controls:
  * - Left Stick / D-Pad: Move
- * - X (Cross): Shield (temporary invincibility)
- * - O (Circle): Shoot projectile
- * - Triangle: Instant death (restart)
- * - Square: Speed boost
+ * - R1: Shield (arcane protection)
+ * - R2: Shoot (seal's power)
+ * - Square: Speed boost (mystic haste)
+ * - X: Break the Seventh Seal (instant death/restart)
  */
 
 class SurvivalGame {
@@ -89,7 +94,9 @@ class SurvivalGame {
     }
 
     start() {
-        console.log('🎮 Starting Survival Game Mode...');
+        console.log('🔒 The Seventh Seal awakens...');
+        console.log('   You are now a Guardian of Ancient Mysteries');
+        console.log('   Protect the seal from the shadows of Halloween night');
         this.isActive = true;
         this.isGameOver = false;
         this.startTime = Date.now();
@@ -131,18 +138,18 @@ class SurvivalGame {
         // Show game UI
         this.showGameUI();
 
-        console.log('✅ Survival Game Started!');
+        console.log('✅ The watch begins. Guard the Seventh Seal!');
     }
 
     stop() {
         this.isActive = false;
         this.stopTimer();
         this.hideGameUI();
-        console.log('🛑 Survival Game Stopped');
+        console.log('🛑 The watch has ended. The seal rests.');
     }
 
     restart() {
-        console.log('🔄 Restarting Survival Game...');
+        console.log('🔄 The Seventh Seal is restored. A new guardian rises...');
 
         // Remove game over screen if it exists
         const overlay = document.getElementById('gameOverOverlay');
@@ -490,10 +497,10 @@ class SurvivalGame {
 
     gameOver() {
         this.isGameOver = true;
-        console.log('💀 GAME OVER!');
-        console.log(`   Survival Time: ${this.survivalTime}s`);
-        console.log(`   Score: ${this.score}`);
-        console.log(`   Enemies Killed: ${this.enemiesKilled}`);
+        console.log('🔓 THE SEVENTH SEAL HAS BEEN BROKEN!');
+        console.log(`   Time Guarded: ${this.survivalTime}s`);
+        console.log(`   Mysteries Preserved: ${this.score}`);
+        console.log(`   Shadows Banished: ${this.enemiesKilled}`);
 
         this.showGameOverScreen();
     }
@@ -510,7 +517,7 @@ class SurvivalGame {
         this.hasShield = true;
         this.shieldAvailable = false;
 
-        console.log('🛡️ Shield activated!');
+        console.log('🛡️ Arcane shield conjured!');
 
         setTimeout(() => {
             this.hasShield = false;
@@ -572,7 +579,7 @@ class SurvivalGame {
 
     instantDeath() {
         if (!this.isActive || this.isGameOver) return;
-        console.log('☠️ Instant death triggered!');
+        console.log('🔓 You have chosen to break the Seventh Seal!');
         this.playerHealth = 0;
         this.gameOver();
     }
@@ -654,7 +661,7 @@ class SurvivalGame {
 
             ui.style.cssText = `
                 position: fixed;
-                top: ${canvasRect.top - 120}px;
+                top: ${canvasRect.top - 160}px;
                 left: ${canvasRect.left}px;
                 width: ${canvasRect.width}px;
                 background: rgba(0, 0, 0, 0.95);
@@ -694,7 +701,7 @@ class SurvivalGame {
         ui.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 25px;">
-                    <div style="font-size: 24px; font-weight: bold; color: #FFFF00;">🎮 SURVIVAL</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #FFFF00; text-shadow: 0 0 8px #FFFF00;">🔒 THE SEVENTH SEAL</div>
                     <div style="font-size: 48px; font-weight: bold; color: #FF0000; text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000; letter-spacing: 3px;">${timeStr}</div>
                     <div style="font-size: 20px; font-weight: bold;">Score: <span style="color: #00FF00;">${this.score}</span></div>
                     <div style="font-size: 20px; font-weight: bold;">Blocks: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
@@ -718,10 +725,10 @@ class SurvivalGame {
             <div style="font-size: 16px; color: #AAA; padding: 8px 0; border-top: 2px solid #444;">
                 <span style="color: #FFF; font-weight: bold;">Controls:</span>
                 <span style="color: #0FF; margin: 0 8px;">Left Stick/D-Pad: Move</span> |
-                <span style="color: #0FF; margin: 0 8px;">✖ (X): Shield</span> |
-                <span style="color: #0FF; margin: 0 8px;">○ (Circle): Shoot</span> |
+                <span style="color: #0FF; margin: 0 8px;">R1: Shield</span> |
+                <span style="color: #0FF; margin: 0 8px;">R2: Shoot</span> |
                 <span style="color: #0FF; margin: 0 8px;">☐ (Square): Speed Boost</span> |
-                <span style="color: #F66; margin: 0 8px;">△ (Triangle): Restart</span>
+                <span style="color: #F66; margin: 0 8px;">✖ (X): Break Seal (Restart)</span>
             </div>
         `;
     }
