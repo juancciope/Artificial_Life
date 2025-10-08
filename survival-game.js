@@ -201,7 +201,10 @@ class SurvivalGame {
                 speed: this.playerSpeed,
                 strength: 100, // Super strong
                 size: 1.5 // Bigger than normal
-            }
+            },
+            // Grid-based movement
+            moveStepCounter: 0,
+            moveStepDelay: 3 // Move every N frames for grid-based feel
         };
 
         // Add to lifeforms
@@ -293,11 +296,6 @@ class SurvivalGame {
                 // Visual feedback
                 this.createCollectFeedback(collectible);
 
-                // Play sound
-                if (this.alife.audioSystem) {
-                    this.alife.audioSystem.playSfx('spawn');
-                }
-
                 // Remove collectible
                 this.collectibles.splice(i, 1);
             }
@@ -362,25 +360,32 @@ class SurvivalGame {
     updatePlayerMovement() {
         if (!this.player) return;
 
-        // Apply direction
-        const speed = this.isSpeedBoosted ? this.playerSpeed * this.speedBoostMultiplier : this.playerSpeed;
+        // Grid-based movement - only move every N frames
+        this.player.moveStepCounter++;
+        const moveDelay = this.isSpeedBoosted ? 1 : this.player.moveStepDelay;
 
-        const oldKey = `${Math.floor(this.player.x)},${Math.floor(this.player.y)}`;
+        if (this.player.moveStepCounter >= moveDelay &&
+            (this.playerDirection.x !== 0 || this.playerDirection.y !== 0)) {
+            this.player.moveStepCounter = 0;
 
-        this.player.x += this.playerDirection.x * speed;
-        this.player.y += this.playerDirection.y * speed;
+            const oldKey = `${Math.floor(this.player.x)},${Math.floor(this.player.y)}`;
 
-        // Wrap around edges (Pac-Man style)
-        if (this.player.x < 0) this.player.x = this.alife.gridSizeX - 1;
-        if (this.player.x >= this.alife.gridSizeX) this.player.x = 0;
-        if (this.player.y < 0) this.player.y = this.alife.gridSizeY - 1;
-        if (this.player.y >= this.alife.gridSizeY) this.player.y = 0;
+            // Move one grid cell at a time (integer movement)
+            this.player.x += Math.sign(this.playerDirection.x);
+            this.player.y += Math.sign(this.playerDirection.y);
 
-        // Update grid
-        const newKey = `${Math.floor(this.player.x)},${Math.floor(this.player.y)}`;
-        if (oldKey !== newKey) {
-            delete this.alife.grid[oldKey];
-            this.alife.grid[newKey] = 'PLAYER';
+            // Wrap around edges (Pac-Man style)
+            if (this.player.x < 0) this.player.x = this.alife.gridSizeX - 1;
+            if (this.player.x >= this.alife.gridSizeX) this.player.x = 0;
+            if (this.player.y < 0) this.player.y = this.alife.gridSizeY - 1;
+            if (this.player.y >= this.alife.gridSizeY) this.player.y = 0;
+
+            // Update grid
+            const newKey = `${Math.floor(this.player.x)},${Math.floor(this.player.y)}`;
+            if (oldKey !== newKey) {
+                delete this.alife.grid[oldKey];
+                this.alife.grid[newKey] = 'PLAYER';
+            }
         }
     }
 

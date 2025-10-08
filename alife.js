@@ -585,11 +585,18 @@ class ArtificialLife {
     
     animate() {
         if (!this.isRunning) return;
-        
+
         // Process all lifeforms
-        // Update survival game if active
         if (this.survivalGame && this.survivalGame.isActive) {
+            // Survival game mode - update game logic AND process enemy lifeforms
             this.survivalGame.update();
+
+            // Process all non-player lifeforms (enemies) for AI movement
+            for (const lifeform of this.lifeforms.values()) {
+                if (!lifeform.isPlayer) {
+                    this.processLifeform(lifeform);
+                }
+            }
         } else {
             // Normal lifeform processing
             for (const lifeform of this.lifeforms.values()) {
