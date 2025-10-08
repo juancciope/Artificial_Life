@@ -369,7 +369,13 @@ class SurvivalGame {
 
         // Grid-based movement - only move every N frames
         this.player.moveStepCounter++;
-        const moveDelay = this.isSpeedBoosted ? 1 : this.player.moveStepDelay;
+
+        // Normalize movement speed based on grid size (larger grids = faster movement)
+        // Base grid size is 50x28, scale movement speed accordingly
+        const baseGridSize = 50;
+        const gridScale = this.alife.gridSizeX / baseGridSize;
+        const scaledDelay = Math.max(1, Math.floor(this.player.moveStepDelay / gridScale));
+        const moveDelay = this.isSpeedBoosted ? 1 : scaledDelay;
 
         if (this.player.moveStepCounter >= moveDelay &&
             (this.playerDirection.x !== 0 || this.playerDirection.y !== 0)) {
@@ -647,11 +653,16 @@ class SurvivalGame {
         if (!ui) {
             ui = document.createElement('div');
             ui.id = 'survivalGameUI';
+
+            // Get canvas position to align with it
+            const canvas = this.alife.canvas;
+            const canvasRect = canvas.getBoundingClientRect();
+
             ui.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
+                position: absolute;
+                top: ${canvasRect.top}px;
+                left: ${canvasRect.left}px;
+                width: ${canvasRect.width}px;
                 background: rgba(0, 0, 0, 0.9);
                 color: white;
                 padding: 10px 20px;
@@ -659,11 +670,11 @@ class SurvivalGame {
                 font-size: 12px;
                 z-index: 1000;
                 display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 20px;
+                flex-direction: column;
+                gap: 10px;
                 border-bottom: 2px solid #FFFF00;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+                box-sizing: border-box;
             `;
             document.body.appendChild(ui);
         }
@@ -686,26 +697,36 @@ class SurvivalGame {
         const timeColor = this.timeRemaining > 30 ? '#00FFFF' : this.timeRemaining > 10 ? '#FFFF00' : '#FF0000';
 
         ui.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-                <div style="font-size: 16px; font-weight: bold; color: #FFFF00;">🎮 SURVIVAL</div>
-                <div style="font-size: 18px; font-weight: bold; color: ${timeColor};">⏱️ ${timeStr}</div>
-                <div style="font-size: 14px;">Score: <span style="color: #00FF00; font-weight: bold;">${this.score}</span></div>
-                <div style="font-size: 14px;">Blocks: <span style="color: #FF00FF; font-weight: bold;">${this.blocksCollected}</span></div>
-                <div style="font-size: 14px;">Kills: <span style="color: #FF6666; font-weight: bold;">${this.enemiesKilled}</span></div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 11px;">
-                    <span style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️${this.shieldAvailable ? '✓' : '⌛'}</span>
-                    <span style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡${this.speedBoostAvailable ? '✓' : '⌛'}</span>
-                    <span style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫${this.canShoot ? '✓' : '⌛'}</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="font-size: 16px; font-weight: bold; color: #FFFF00;">🎮 SURVIVAL</div>
+                    <div style="font-size: 18px; font-weight: bold; color: ${timeColor};">⏱️ ${timeStr}</div>
+                    <div style="font-size: 14px;">Score: <span style="color: #00FF00; font-weight: bold;">${this.score}</span></div>
+                    <div style="font-size: 14px;">Blocks: <span style="color: #FF00FF; font-weight: bold;">${this.blocksCollected}</span></div>
+                    <div style="font-size: 14px;">Kills: <span style="color: #FF6666; font-weight: bold;">${this.enemiesKilled}</span></div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 11px; color: #AAA;">Health:</span>
-                    <div style="background: #333; width: 120px; height: 16px; border-radius: 3px; overflow: hidden; border: 1px solid #555;">
-                        <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 11px;">
+                        <span style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️${this.shieldAvailable ? '✓' : '⌛'}</span>
+                        <span style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡${this.speedBoostAvailable ? '✓' : '⌛'}</span>
+                        <span style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫${this.canShoot ? '✓' : '⌛'}</span>
                     </div>
-                    <span style="font-size: 11px; color: ${healthColor}; font-weight: bold; min-width: 35px;">${this.playerHealth}%</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; color: #AAA;">Health:</span>
+                        <div style="background: #333; width: 120px; height: 16px; border-radius: 3px; overflow: hidden; border: 1px solid #555;">
+                            <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
+                        </div>
+                        <span style="font-size: 11px; color: ${healthColor}; font-weight: bold; min-width: 35px;">${this.playerHealth}%</span>
+                    </div>
                 </div>
+            </div>
+            <div style="font-size: 10px; color: #888; padding: 5px 0; border-top: 1px solid #333;">
+                <span style="color: #AAA;">Controls:</span>
+                <span style="color: #0FF;">Left Stick/D-Pad: Move</span> |
+                <span style="color: #0FF;">✖ (X): Shield</span> |
+                <span style="color: #0FF;">○ (Circle): Shoot</span> |
+                <span style="color: #0FF;">☐ (Square): Speed Boost</span> |
+                <span style="color: #F66;">△ (Triangle): Restart</span>
             </div>
         `;
     }
