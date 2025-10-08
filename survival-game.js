@@ -649,20 +649,25 @@ class SurvivalGame {
             ui.id = 'survivalGameUI';
             ui.style.cssText = `
                 position: fixed;
-                top: 20px;
-                right: 20px;
-                background: rgba(0, 0, 0, 0.8);
+                top: 0;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.9);
                 color: white;
-                padding: 20px;
-                border-radius: 10px;
+                padding: 10px 20px;
                 font-family: 'JetBrains Mono', monospace;
-                font-size: 14px;
+                font-size: 12px;
                 z-index: 1000;
-                min-width: 200px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 20px;
+                border-bottom: 2px solid #FFFF00;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             `;
             document.body.appendChild(ui);
         }
-        ui.style.display = 'block';
+        ui.style.display = 'flex';
     }
 
     hideGameUI() {
@@ -681,24 +686,26 @@ class SurvivalGame {
         const timeColor = this.timeRemaining > 30 ? '#00FFFF' : this.timeRemaining > 10 ? '#FFFF00' : '#FF0000';
 
         ui.innerHTML = `
-            <h3 style="margin: 0 0 15px 0; color: #FFFF00;">🎮 SURVIVAL MODE</h3>
-            <div style="margin: 5px 0; font-size: 20px; font-weight: bold;">
-                Time: <span style="color: ${timeColor};">${timeStr}</span>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div style="font-size: 16px; font-weight: bold; color: #FFFF00;">🎮 SURVIVAL</div>
+                <div style="font-size: 18px; font-weight: bold; color: ${timeColor};">⏱️ ${timeStr}</div>
+                <div style="font-size: 14px;">Score: <span style="color: #00FF00; font-weight: bold;">${this.score}</span></div>
+                <div style="font-size: 14px;">Blocks: <span style="color: #FF00FF; font-weight: bold;">${this.blocksCollected}</span></div>
+                <div style="font-size: 14px;">Kills: <span style="color: #FF6666; font-weight: bold;">${this.enemiesKilled}</span></div>
             </div>
-            <div style="margin: 5px 0;">Score: <span style="color: #00FF00;">${this.score}</span></div>
-            <div style="margin: 5px 0;">Blocks: <span style="color: #FF00FF;">${this.blocksCollected}</span></div>
-            <div style="margin: 5px 0;">Kills: <span style="color: #FF6666;">${this.enemiesKilled}</span></div>
-            <div style="margin: 10px 0 5px 0;">Health:</div>
-            <div style="background: #333; height: 20px; border-radius: 3px; overflow: hidden;">
-                <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
-            </div>
-            <div style="margin: 10px 0 5px 0; font-size: 11px; color: #888;">
-                🛡️ Shield: ${this.shieldAvailable ? '✓' : '⌛'}<br>
-                ⚡ Speed: ${this.speedBoostAvailable ? '✓' : '⌛'}<br>
-                🔫 Shoot: ${this.canShoot ? '✓' : '⌛'}
-            </div>
-            <div style="margin: 10px 0 5px 0; font-size: 10px; color: #666;">
-                Collectibles: ${this.collectibles.length}/${this.maxCollectibles}
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 11px;">
+                    <span style="color: ${this.shieldAvailable ? '#00FFFF' : '#666'};">🛡️${this.shieldAvailable ? '✓' : '⌛'}</span>
+                    <span style="color: ${this.speedBoostAvailable ? '#00FF00' : '#666'};">⚡${this.speedBoostAvailable ? '✓' : '⌛'}</span>
+                    <span style="color: ${this.canShoot ? '#00FF00' : '#666'};">🔫${this.canShoot ? '✓' : '⌛'}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; color: #AAA;">Health:</span>
+                    <div style="background: #333; width: 120px; height: 16px; border-radius: 3px; overflow: hidden; border: 1px solid #555;">
+                        <div style="width: ${(this.playerHealth / this.playerMaxHealth) * 100}%; height: 100%; background: ${healthColor}; transition: width 0.3s;"></div>
+                    </div>
+                    <span style="font-size: 11px; color: ${healthColor}; font-weight: bold; min-width: 35px;">${this.playerHealth}%</span>
+                </div>
             </div>
         `;
     }
