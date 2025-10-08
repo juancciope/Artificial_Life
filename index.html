@@ -26,32 +26,32 @@
                     </div>
                     <div class="tab-content">
                         <div id="controls-tab" class="tab-panel active">
-                            <!-- LIFE SIMULATION CATEGORY -->
+                            <!-- THE SEVENTH SEAL CATEGORY -->
                             <div class="control-category">
-                                <h2 class="category-header">🧬 Life Simulation</h2>
+                                <h2 class="category-header">🔒 The Seventh Seal</h2>
 
                                 <div class="control-section">
-                                    <h3>Basic Controls</h3>
-                                    <button id="startBtn" class="control-btn">Start Life</button>
+                                    <h3>Seal Controls</h3>
+                                    <button id="startBtn" class="control-btn">Awaken the Seal</button>
                                     <button id="pauseBtn" class="control-btn">Pause</button>
                                     <button id="resetBtn" class="control-btn">Reset</button>
-                                    <button id="thanosBtn" class="control-btn special">Thanos Snap</button>
+                                    <button id="thanosBtn" class="control-btn special">Banish Half</button>
                                 </div>
 
                                 <div class="control-section">
-                                    <h3>Environment</h3>
+                                    <h3>Mystical Forces</h3>
                                     <label class="toggle">
                                         <input type="checkbox" id="gravityToggle">
-                                        <span class="toggle-label">Gravity</span>
+                                        <span class="toggle-label">Dark Gravity</span>
                                     </label>
                                     <label class="toggle">
                                         <input type="checkbox" id="trailsToggle">
-                                        <span class="toggle-label">Trails</span>
+                                        <span class="toggle-label">Shadow Trails</span>
                                     </label>
                                 </div>
 
                                 <div class="control-section">
-                                    <h3>Radiation</h3>
+                                    <h3>Chaos Energy</h3>
                                     <input type="range" id="radiationSlider" min="0" max="100" value="0" class="slider">
                                     <span id="radiationValue">0</span>
                                 </div>
@@ -59,7 +59,7 @@
 
                             <!-- AUDIO CATEGORY -->
                             <div class="control-category">
-                                <h2 class="category-header">🔊 Audio System</h2>
+                                <h2 class="category-header">🔊 Arcane Soundscape</h2>
 
                                 <div class="control-section">
                                     <h3>Audio Output</h3>
@@ -107,11 +107,11 @@
 
                             <!-- PERFORMANCE & VISUAL CATEGORY -->
                             <div class="control-category">
-                                <h2 class="category-header">🎭 Performance & Visual</h2>
+                                <h2 class="category-header">🎭 Ritual Performance</h2>
 
                                 <div class="control-section">
-                                    <h3>Dance Mode</h3>
-                                    <button id="danceToggle" class="control-btn">Enable Dance Mode</button>
+                                    <h3>Ritual Dance</h3>
+                                    <button id="danceToggle" class="control-btn">Begin Ritual Dance</button>
                                     <div class="dance-controls">
                                         <label class="control-label">Dance Style:</label>
                                         <select id="danceStyle" class="control-select">
@@ -162,11 +162,11 @@
 
                             <!-- PS4 GAMEPAD CATEGORY -->
                             <div class="control-category">
-                                <h2 class="category-header">🎮 PS4 Controller</h2>
+                                <h2 class="category-header">🎮 Guardian's Command</h2>
 
                                 <div class="control-section">
                                     <h3>Connection</h3>
-                                    <p style="font-size: 0.75rem; color: #888888; margin: 10px 0;">Connect PS4 DualShock 4 via USB</p>
+                                    <p style="font-size: 0.75rem; color: #888888; margin: 10px 0;">Connect PS4 DualShock 4 via USB to command the seal</p>
                                     <div class="stat">
                                         Status: <span id="gamepadStatus" style="color: #666666;">Not Connected</span>
                                     </div>
@@ -188,27 +188,26 @@
                                         <strong>△ Triangle:</strong> Dance Mode<br>
                                         <strong>L1/R1:</strong> Gravity/Trails<br>
                                         <strong>Share/Options:</strong> Pause/Start<br>
-                                        <strong>D-Pad:</strong> Radiation/Formation<br>
-                                        <strong>L2/R2:</strong> Population/Speed<br>
-                                        <strong>Sticks:</strong> Grid/DNA Control<br>
-                                        <strong>PS Button:</strong> Start Survival<br>
+                                        <strong>D-Pad:</strong> Chaos/Formation<br>
+                                        <strong>L2/R2:</strong> Shadow Count/Speed<br>
+                                        <strong>Sticks:</strong> Grid/Chaos Control<br>
+                                        <strong>PS Button:</strong> Begin Guardian Mode<br>
                                         <br>
-                                        <div style="color: #FFFF00; font-weight: bold; margin-bottom: 5px;">SURVIVAL MODE:</div>
-                                        <strong>Left Stick:</strong> Move Player<br>
+                                        <div style="color: #FFFF00; font-weight: bold; margin-bottom: 5px;">GUARDIAN MODE:</div>
+                                        <strong>Left Stick:</strong> Move Guardian<br>
                                         <strong>D-Pad:</strong> Move (Alternative)<br>
-                                        <strong>✖ Cross:</strong> Shield<br>
-                                        <strong>○ Circle:</strong> Shoot<br>
-                                        <strong>☐ Square:</strong> Speed Boost<br>
-                                        <strong>△ Triangle:</strong> Suicide/Die<br>
-                                        <strong>PS:</strong> Restart (when game over)<br>
-                                        <strong>Share/Options:</strong> Exit to Normal
+                                        <strong>R1:</strong> Arcane Shield<br>
+                                        <strong>R2:</strong> Seal's Power (Shoot)<br>
+                                        <strong>☐ Square:</strong> Mystic Haste<br>
+                                        <strong>✖ Cross:</strong> Break Seal (Restart)<br>
+                                        <strong>PS:</strong> Exit Guardian Mode
                                     </div>
                                 </div>
                             </div>
 
                             <!-- KINECT SHADOW CATEGORY -->
                             <div class="control-category">
-                                <h2 class="category-header">📹 Kinect Shadow</h2>
+                                <h2 class="category-header">📹 Shadow Realm</h2>
 
                                 <div class="control-section">
                                     <h3>Connection</h3>
@@ -242,10 +241,10 @@
                             </div>
 
                             <div class="stats-section">
-                                <h3>Statistics</h3>
-                                <div class="stat">Current: <span id="currentCount">0</span></div>
-                                <div class="stat">Total: <span id="totalCount">0</span></div>
-                                <div class="stat">Max: <span id="maxCount">0</span></div>
+                                <h3>Seal Statistics</h3>
+                                <div class="stat">Shadows Active: <span id="currentCount">0</span></div>
+                                <div class="stat">Total Summoned: <span id="totalCount">0</span></div>
+                                <div class="stat">Maximum Held: <span id="maxCount">0</span></div>
                             </div>
                         </div>
                         <div id="about-tab" class="tab-panel">
@@ -258,7 +257,7 @@
                                 <h4>🎮 The Guardian's Mission</h4>
                                 <p>You are a keeper of the Seventh Seal. The red entities you see are manifestations of chaos trying to break the seal and release the ancient mysteries. Your mission is to guard the seal and survive the Halloween night.</p>
 
-                                <h4>Survival Mechanics</h4>
+                                <h4>Guardian Mechanics</h4>
                                 <ul>
                                     <li><strong>Guard the Seal:</strong> Survive as long as possible to protect ancient wisdom</li>
                                     <li><strong>Arcane Shield (R1):</strong> Temporary protection from the darkness</li>
@@ -268,8 +267,8 @@
                                     <li><strong>Collect Mysteries:</strong> Gather colored blocks to preserve ancient knowledge</li>
                                 </ul>
                                 
-                                <h4>MIDI Integration - Universal Controller Support</h4>
-                                <p>Optimized for multiple MIDI controllers - connect via USB for live performance control:</p>
+                                <h4>🎹 Arcane Controllers - MIDI Integration</h4>
+                                <p>Channel mystical energies through MIDI controllers - connect via USB to command the seal:</p>
                                 
                                 <h5>🎹 MicroLab Smart (25-key) Controls:</h5>
                                 <ul>
@@ -331,8 +330,8 @@
                                     <li><strong>Smart Analysis:</strong> Automatic pitch detection and spectral analysis</li>
                                 </ul>
                                 
-                                <h4>🎹 MIDI + Audio Performance</h4>
-                                <p>Revolutionary dual-system for complete audiovisual control:</p>
+                                <h4>🎹 Dual Arcane Channels</h4>
+                                <p>Harness both MIDI and audio mystical energies for complete ritual control:</p>
                                 
                                 <h5>Simultaneous Control:</h5>
                                 <ul>
@@ -348,7 +347,7 @@
                 
                 <div class="midi-status">
                     <div class="midi-ready">
-                        <p>🎹 MIDI Ready</p>
+                        <p>🎹 Arcane Conduit Ready</p>
                     </div>
                 </div>
                 
