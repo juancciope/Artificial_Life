@@ -158,6 +158,40 @@
                                 </div>
                             </div>
 
+                            <!-- PS4 GAMEPAD CATEGORY -->
+                            <div class="control-category">
+                                <h2 class="category-header">🎮 PS4 Controller</h2>
+
+                                <div class="control-section">
+                                    <h3>Connection</h3>
+                                    <p style="font-size: 0.75rem; color: #888888; margin: 10px 0;">Connect PS4 DualShock 4 via USB</p>
+                                    <div class="stat">
+                                        Status: <span id="gamepadStatus" style="color: #666666;">Not Connected</span>
+                                    </div>
+                                    <div class="stat">
+                                        Controller: <span id="gamepadName" style="color: #888888; font-size: 0.7rem;">-</span>
+                                    </div>
+                                    <div class="stat">
+                                        Info: <span id="gamepadButtons" style="color: #888888;">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Button Mapping</h3>
+                                    <div style="font-size: 0.7rem; color: #AAAAAA; line-height: 1.6;">
+                                        <strong>✖ Cross:</strong> Spawn Lifeforms<br>
+                                        <strong>○ Circle:</strong> Thanos Snap<br>
+                                        <strong>☐ Square:</strong> Reset Life<br>
+                                        <strong>△ Triangle:</strong> Dance Mode<br>
+                                        <strong>L1/R1:</strong> Gravity/Trails<br>
+                                        <strong>Share/Options:</strong> Pause/Start<br>
+                                        <strong>D-Pad:</strong> Radiation/Formation<br>
+                                        <strong>L2/R2:</strong> Population/Speed<br>
+                                        <strong>Sticks:</strong> Grid/DNA Control
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- KINECT SHADOW CATEGORY -->
                             <div class="control-category">
                                 <h2 class="category-header">📹 Kinect Shadow</h2>
@@ -318,6 +352,8 @@
     <script src="audio-input.js"></script>
     <script src="dance-controller.js"></script>
     <script src="kinect-controller.js"></script>
+    <script src="survival-game.js"></script>
+    <script src="gamepad-controller.js"></script>
     <script src="midi_clean.js"></script>
     <script src="alife.js"></script>
 </body>

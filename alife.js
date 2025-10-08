@@ -57,6 +57,8 @@ class ArtificialLife {
         this.initializeAudioInput();
         this.initializeDanceController();
         this.initializeKinect();
+        this.initializeGamepad();
+        this.initializeSurvivalGame();
         this.startLife();
         this.startVisualizationUpdate();
         
@@ -465,6 +467,20 @@ class ArtificialLife {
         }
     }
 
+    initializeGamepad() {
+        // Initialize Gamepad controller if available
+        if (typeof GamepadController !== 'undefined') {
+            this.gamepadController = new GamepadController(this);
+        }
+    }
+
+    initializeSurvivalGame() {
+        // Initialize Survival Game if available
+        if (typeof SurvivalGame !== 'undefined') {
+            this.survivalGame = new SurvivalGame(this);
+        }
+    }
+
     switchTab(tabName) {
         // Remove active class from all tabs and panels
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -571,14 +587,20 @@ class ArtificialLife {
         if (!this.isRunning) return;
         
         // Process all lifeforms
-        for (const lifeform of this.lifeforms.values()) {
-            this.processLifeform(lifeform);
+        // Update survival game if active
+        if (this.survivalGame && this.survivalGame.isActive) {
+            this.survivalGame.update();
+        } else {
+            // Normal lifeform processing
+            for (const lifeform of this.lifeforms.values()) {
+                this.processLifeform(lifeform);
+            }
         }
-        
+
         // Render
         this.render();
         this.updateStats();
-        
+
         this.frameId = requestAnimationFrame(() => this.animate());
     }
     
@@ -869,6 +891,11 @@ class ArtificialLife {
         // Render dance effects
         if (this.danceController && this.danceController.isEnabled) {
             this.danceController.renderDanceEffects(this.ctx);
+        }
+
+        // Render survival game on top
+        if (this.survivalGame && this.survivalGame.isActive) {
+            this.survivalGame.render(this.ctx);
         }
 
         // Render center text (always on top)

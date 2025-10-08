@@ -848,17 +848,79 @@ header {
     }
 }
 
+/* Gamepad Feedback Overlay */
+.gamepad-feedback-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: #FFFF00;
+    padding: 30px 50px;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 9999;
+    pointer-events: none;
+    animation: gamepadFeedbackPulse 1.5s ease-out;
+    border: 2px solid #FFFF00;
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+}
+
+.gamepad-feedback-spawn {
+    color: #00FF00;
+    border-color: #00FF00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.gamepad-feedback-kill {
+    color: #FF0000;
+    border-color: #FF0000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.gamepad-feedback-connect {
+    color: #00FFFF;
+    border-color: #00FFFF;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+@keyframes gamepadFeedbackPulse {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+}
+
 @media (max-width: 768px) {
     .glitch {
         font-size: 2.5rem;
     }
-    
+
     .controls-panel {
         grid-template-columns: 1fr;
     }
-    
+
     .midi-feedback {
         font-size: 1rem;
         padding: 10px 20px;
+    }
+
+    .gamepad-feedback-overlay {
+        font-size: 18px;
+        padding: 20px 30px;
     }
 }
