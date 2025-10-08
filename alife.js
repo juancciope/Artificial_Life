@@ -46,12 +46,17 @@ class ArtificialLife {
         this.centerText = '';
         this.textBounds = null;
         this.textBordersEnabled = true;
+
+        // Kinect shadow properties
+        this.shadowMask = null;
+        this.shadowInverted = false;
         
         this.initializeControls();
         this.initializeMIDI();
         this.initializeAudio();
         this.initializeAudioInput();
         this.initializeDanceController();
+        this.initializeKinect();
         this.startLife();
         this.startVisualizationUpdate();
         
@@ -385,6 +390,35 @@ class ArtificialLife {
             this.textBordersEnabled = e.target.checked;
         });
 
+        // Kinect controls
+        document.getElementById('kinectConnect').addEventListener('click', () => {
+            if (this.kinectController) {
+                const ip = document.getElementById('kinectIP').value || '127.0.0.1';
+                this.kinectController.enable();
+                this.kinectController.connect(ip, 8181);
+            }
+        });
+
+        document.getElementById('kinectDisconnect').addEventListener('click', () => {
+            if (this.kinectController) {
+                this.kinectController.disable();
+                this.kinectController.disconnect();
+            }
+        });
+
+        document.getElementById('kinectThreshold').addEventListener('input', (e) => {
+            const threshold = e.target.value;
+            document.getElementById('thresholdValue').textContent = threshold + 'mm';
+            if (this.kinectController) {
+                this.kinectController.setThreshold(threshold);
+            }
+        });
+
+        document.getElementById('kinectInvert').addEventListener('change', (e) => {
+            // Invert shadow logic (show lifeforms outside shadow instead of inside)
+            this.shadowInverted = e.target.checked;
+        });
+
         // Handle fullscreen changes (including ESC key)
         document.addEventListener('fullscreenchange', () => {
             this.handleFullscreenChange();
@@ -423,7 +457,14 @@ class ArtificialLife {
             this.danceController = new DanceController(this);
         }
     }
-    
+
+    initializeKinect() {
+        // Initialize Kinect controller if available
+        if (typeof KinectController !== 'undefined') {
+            this.kinectController = new KinectController(this);
+        }
+    }
+
     switchTab(tabName) {
         // Remove active class from all tabs and panels
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -720,7 +761,32 @@ class ArtificialLife {
         for (const lifeform of this.lifeforms.values()) {
             const x = lifeform.x * this.cellSize;
             const y = lifeform.y * this.cellSize;
-            
+
+            // Check if lifeform is in Kinect shadow
+            const gridX = Math.floor(lifeform.x);
+            const gridY = Math.floor(lifeform.y);
+            let isInShadow = false;
+
+            if (this.shadowMask &&
+                gridY >= 0 && gridY < this.shadowMask.length &&
+                gridX >= 0 && gridX < this.shadowMask[0].length) {
+                isInShadow = this.shadowMask[gridY][gridX];
+
+                // Apply invert if enabled
+                if (this.shadowInverted) {
+                    isInShadow = !isInShadow;
+                }
+            }
+
+            // Apply shadow visibility
+            if (this.shadowMask) {
+                if (isInShadow) {
+                    this.ctx.globalAlpha = 1.0;  // Fully visible in shadow
+                } else {
+                    this.ctx.globalAlpha = 0.05;  // Almost invisible outside shadow
+                }
+            }
+
             // Use dance colors if dance mode is active
             if (this.danceController && this.danceController.isEnabled) {
                 const colors = this.danceController.colorPalettes[this.danceController.currentPalette];
@@ -795,8 +861,11 @@ class ArtificialLife {
                 
                 this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
             }
+
+            // Reset alpha after each lifeform
+            this.ctx.globalAlpha = 1.0;
         }
-        
+
         // Render dance effects
         if (this.danceController && this.danceController.isEnabled) {
             this.danceController.renderDanceEffects(this.ctx);

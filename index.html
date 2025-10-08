@@ -158,6 +158,41 @@
                                 </div>
                             </div>
 
+                            <!-- KINECT SHADOW CATEGORY -->
+                            <div class="control-category">
+                                <h2 class="category-header">📹 Kinect Shadow</h2>
+
+                                <div class="control-section">
+                                    <h3>Connection</h3>
+                                    <label class="control-label">Server IP:</label>
+                                    <input type="text" id="kinectIP" placeholder="127.0.0.1" value="127.0.0.1" style="width: 100%; padding: 8px; background: #1A1A1A; border: 1px solid #333333; border-radius: 4px; color: white; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; height: 38px; margin: 5px 0 15px 0; box-sizing: border-box; display: block;">
+                                    <button id="kinectConnect" class="control-btn">Connect Kinect</button>
+                                    <button id="kinectDisconnect" class="control-btn">Disconnect</button>
+                                    <div class="stat" style="margin-top: 10px;">
+                                        Status: <span id="kinectStatus" style="color: #666666;">Not Connected</span>
+                                    </div>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Shadow Settings</h3>
+                                    <label class="control-label">Depth Threshold:</label>
+                                    <input type="range" id="kinectThreshold" min="400" max="3000" value="1200" class="slider">
+                                    <span id="thresholdValue">1200mm</span>
+
+                                    <label class="toggle">
+                                        <input type="checkbox" id="kinectInvert">
+                                        <span class="toggle-label">Invert Shadow</span>
+                                    </label>
+                                </div>
+
+                                <div class="control-section">
+                                    <h3>Stats</h3>
+                                    <div class="stat">Frames: <span id="kinectFrames">0</span></div>
+                                    <div class="stat">FPS: <span id="kinectFPS">0</span></div>
+                                    <div class="stat">Shadow Cells: <span id="kinectShadow">0</span></div>
+                                </div>
+                            </div>
+
                             <div class="stats-section">
                                 <h3>Statistics</h3>
                                 <div class="stat">Current: <span id="currentCount">0</span></div>
@@ -282,6 +317,7 @@
     <script src="audio.js"></script>
     <script src="audio-input.js"></script>
     <script src="dance-controller.js"></script>
+    <script src="kinect-controller.js"></script>
     <script src="midi_clean.js"></script>
     <script src="alife.js"></script>
 </body>
