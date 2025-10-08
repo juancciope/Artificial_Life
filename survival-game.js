@@ -143,6 +143,13 @@ class SurvivalGame {
 
     restart() {
         console.log('🔄 Restarting Survival Game...');
+
+        // Remove game over screen if it exists
+        const overlay = document.getElementById('gameOverOverlay');
+        if (overlay) {
+            overlay.remove();
+        }
+
         this.stopTimer();
         this.projectiles = [];
         this.collectibles = [];
@@ -736,7 +743,7 @@ class SurvivalGame {
                     border-radius: 5px;
                     cursor: pointer;
                     margin: 10px;
-                ">RESTART (Triangle)</button>
+                ">RESTART (PS Button)</button>
                 <button id="exitGameBtn" style="
                     background: #666;
                     color: white;
@@ -802,7 +809,7 @@ class SurvivalGame {
                     border-radius: 5px;
                     cursor: pointer;
                     margin: 10px;
-                ">PLAY AGAIN (Triangle)</button>
+                ">PLAY AGAIN (PS Button)</button>
                 <button id="exitGameBtn" style="
                     background: #666;
                     color: white;
