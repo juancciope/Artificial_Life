@@ -187,4 +187,32 @@ class KinectController {
             shadowCells: this.shadowCellCount
         };
     }
+
+    toggleFullscreen() {
+        console.log('🖥️ toggleFullscreen() called!');
+        const canvas = this.alife.canvas;
+        console.log('🖥️ Canvas element:', canvas);
+        console.log('🖥️ Current fullscreen element:', document.fullscreenElement);
+
+        if (!document.fullscreenElement) {
+            // Enter fullscreen
+            console.log('🖥️ Attempting to enter fullscreen...');
+            canvas.requestFullscreen().then(() => {
+                console.log('🖥️ ✅ Entered Kinect shadow fullscreen mode');
+                // Add a class to canvas for fullscreen styling if needed
+                canvas.classList.add('kinect-fullscreen');
+            }).catch(err => {
+                console.error('❌ Error attempting to enable fullscreen:', err);
+            });
+        } else {
+            // Exit fullscreen
+            console.log('🖥️ Attempting to exit fullscreen...');
+            document.exitFullscreen().then(() => {
+                console.log('🖥️ ✅ Exited Kinect shadow fullscreen mode');
+                canvas.classList.remove('kinect-fullscreen');
+            }).catch(err => {
+                console.error('❌ Error attempting to exit fullscreen:', err);
+            });
+        }
+    }
 }

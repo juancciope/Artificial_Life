@@ -560,6 +560,22 @@ header {
     /* Dimensions will be set by JavaScript */
 }
 
+/* Fullscreen mode for Kinect shadow display */
+#lifeCanvas:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    border: none;
+    box-shadow: none;
+    object-fit: contain;
+}
+
+#lifeCanvas.kinect-fullscreen:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw;
+    max-height: 100vh;
+}
+
 .overlay-effects {
     position: absolute;
     top: 0;

@@ -257,52 +257,96 @@ class DanceController {
         
         switch (this.danceMode) {
             case 'flow':
-                dx = flow.x * (1 + this.bass * 2) * rhythmMultiplier;
-                dy = flow.y * (1 + this.bass * 2) * rhythmMultiplier;
+                // Smooth organic flow field movement
+                dx = flow.x * (2 + this.bass * 3) * rhythmMultiplier;
+                dy = flow.y * (2 + this.bass * 3) * rhythmMultiplier;
+                // Apply subtle formation influence
+                const flowFormation = this.getFormationPosition(lifeform);
+                dx += (flowFormation.x - lifeform.x) * 0.03;
+                dy += (flowFormation.y - lifeform.y) * 0.03;
                 // Add kick drum bounce
                 if (lifeform.lastKickTime && Date.now() - lifeform.lastKickTime < 200) {
-                    dy -= this.bass * 3;
+                    dy -= this.bass * 5;
                 }
                 break;
-                
+
             case 'pulse':
+                // Strong pulsing from center with clear expansion/contraction
+                const pulseCenterX = this.alife.gridSizeX / 2;
+                const pulseCenterY = this.alife.gridSizeY / 2;
                 const angle = Math.atan2(
-                    lifeform.y - this.alife.gridSize / 2,
-                    lifeform.x - this.alife.gridSize / 2
+                    lifeform.y - pulseCenterY,
+                    lifeform.x - pulseCenterX
                 );
-                // Synchronized pulsing to BPM
-                const pulseForce = Math.sin(beatPhase * Math.PI * 2) * this.bass * rhythmMultiplier;
-                dx = Math.cos(angle) * pulseForce * 3;
-                dy = Math.sin(angle) * pulseForce * 3;
+                // Create strong pulsing effect
+                const pulsePhase = beatPhase * Math.PI * 4; // Faster pulsing
+                const pulseForce = Math.sin(pulsePhase) * (3 + this.bass * 10);
+                dx = Math.cos(angle) * pulseForce;
+                dy = Math.sin(angle) * pulseForce;
+                // Apply formation to maintain structure
+                const pulseFormation = this.getFormationPosition(lifeform);
+                dx += (pulseFormation.x - lifeform.x) * 0.05;
+                dy += (pulseFormation.y - lifeform.y) * 0.05;
                 break;
                 
             case 'spiral':
-                // Rhythm-synced spiral rotation
-                const spiralSpeed = (this.currentBPM / 120) * 0.1 * rhythmMultiplier;
-                const spiralAngle = (lifeform.danceAngle || 0) + spiralSpeed;
-                const spiralRadius = (20 + this.bass * 30) * rhythmMultiplier;
-                dx = Math.cos(spiralAngle) * spiralRadius * 0.05;
-                dy = Math.sin(spiralAngle) * spiralRadius * 0.05;
-                lifeform.danceAngle = spiralAngle;
+                // Enhanced spiral with clear rotation and formation
+                const spiralCenterX = this.alife.gridSizeX / 2;
+                const spiralCenterY = this.alife.gridSizeY / 2;
+                const currentAngle = Math.atan2(lifeform.y - spiralCenterY, lifeform.x - spiralCenterX);
+                const currentRadius = Math.sqrt(
+                    Math.pow(lifeform.x - spiralCenterX, 2) +
+                    Math.pow(lifeform.y - spiralCenterY, 2)
+                );
+                // Rotate around center
+                const rotationSpeed = (0.02 + this.bass * 0.03) * rhythmMultiplier;
+                const newAngle = currentAngle + rotationSpeed;
+                // Spiral in/out based on beat
+                const radiusChange = Math.sin(beatPhase * Math.PI * 2) * 2;
+                const targetRadius = currentRadius + radiusChange;
+                // Calculate new position
+                const targetX = spiralCenterX + Math.cos(newAngle) * targetRadius;
+                const targetY = spiralCenterY + Math.sin(newAngle) * targetRadius;
+                dx = (targetX - lifeform.x) * 0.2;
+                dy = (targetY - lifeform.y) * 0.2;
                 break;
                 
             case 'wave':
-                const wavePhase = (lifeform.x / this.alife.gridSize) * Math.PI * 2;
-                // Wave synchronized to beat
-                const waveSpeed = (this.currentBPM / 60) * 0.001;
-                dy = Math.sin(Date.now() * waveSpeed + wavePhase) * this.bass * 4 * rhythmMultiplier;
-                dx = (this.mid * 2 - 1) * rhythmMultiplier;
+                // Clear wave pattern moving across the screen
+                const waveTime = Date.now() * 0.002;
+                const waveOffset = (lifeform.x / this.alife.gridSizeX) * Math.PI * 4;
+                const waveAmplitude = 5 + this.bass * 10;
+                // Vertical wave motion
+                dy = Math.sin(waveTime + waveOffset) * waveAmplitude * rhythmMultiplier;
+                // Slow horizontal drift
+                dx = 1.5;
+                // Apply formation influence for organized waves
+                const waveFormation = this.getFormationPosition(lifeform);
+                dx += (waveFormation.x - lifeform.x) * 0.02;
+                dy += (waveFormation.y - lifeform.y) * 0.02;
+                // Wrap around screen for continuous wave
+                if (lifeform.x > this.alife.gridSizeX - 5) {
+                    lifeform.x = 5;
+                }
                 break;
                 
             case 'constellation':
-                // Move towards formation position with rhythm
+                // Strong formation with twinkling effect
                 const targetPos = this.getFormationPosition(lifeform);
-                dx = (targetPos.x - lifeform.x) * 0.1 * rhythmMultiplier;
-                dy = (targetPos.y - lifeform.y) * 0.1 * rhythmMultiplier;
-                // Rhythmic shimmer
-                const shimmerIntensity = (lifeform.shimmer || 1) * this.treble;
-                dx += (Math.random() - 0.5) * shimmerIntensity * 2;
-                dy += (Math.random() - 0.5) * shimmerIntensity * 2;
+                // Strong pull to formation position
+                dx = (targetPos.x - lifeform.x) * 0.15;
+                dy = (targetPos.y - lifeform.y) * 0.15;
+                // Add twinkling movement only on beats
+                if (this.currentBeatInfo && this.currentBeatInfo.beat) {
+                    const twinkleForce = 3 * this.currentBeatInfo.strength;
+                    dx += (Math.random() - 0.5) * twinkleForce;
+                    dy += (Math.random() - 0.5) * twinkleForce;
+                    lifeform.twinkle = 2.0; // Visual twinkle effect
+                }
+                // Gentle floating motion
+                const floatTime = Date.now() * 0.001;
+                dx += Math.sin(floatTime + lifeform.id) * 0.3;
+                dy += Math.cos(floatTime + lifeform.id * 1.5) * 0.3;
                 break;
         }
         
@@ -330,10 +374,10 @@ class DanceController {
         let newY = lifeform.y + lifeform.danceVelocity.y;
         
         // Wrap around edges for continuous flow
-        if (newX < 0) newX = this.alife.gridSize - 1;
-        if (newX >= this.alife.gridSize) newX = 0;
-        if (newY < 0) newY = this.alife.gridSize - 1;
-        if (newY >= this.alife.gridSize) newY = 0;
+        if (newX < 0) newX = this.alife.gridSizeX - 1;
+        if (newX >= this.alife.gridSizeX) newX = 0;
+        if (newY < 0) newY = this.alife.gridSizeY - 1;
+        if (newY >= this.alife.gridSizeY) newY = 0;
         
         // Update position
         const oldKey = `${oldX},${oldY}`;
@@ -383,8 +427,8 @@ class DanceController {
     }
 
     getFlowVector(x, y) {
-        const col = Math.floor(x / this.alife.gridSize * this.flowFieldResolution);
-        const row = Math.floor(y / this.alife.gridSize * this.flowFieldResolution);
+        const col = Math.floor(x / this.alife.gridSizeX * this.flowFieldResolution);
+        const row = Math.floor(y / this.alife.gridSizeY * this.flowFieldResolution);
         
         if (row >= 0 && row < this.flowFieldResolution && 
             col >= 0 && col < this.flowFieldResolution) {
@@ -396,10 +440,10 @@ class DanceController {
 
     getFormationPosition(lifeform) {
         const center = {
-            x: this.alife.gridSize * this.formationCenter.x,
-            y: this.alife.gridSize * this.formationCenter.y
+            x: this.alife.gridSizeX * this.formationCenter.x,
+            y: this.alife.gridSizeY * this.formationCenter.y
         };
-        const radius = this.alife.gridSize * this.formationRadius;
+        const radius = Math.min(this.alife.gridSizeX, this.alife.gridSizeY) * this.formationRadius;
         
         switch (this.currentFormation) {
             case 'circle':
@@ -457,10 +501,10 @@ class DanceController {
     createBeatWave(strength = 1, beatType = 'general') {
         // Create expanding wave effect from center with beat-specific properties
         const wave = {
-            x: this.alife.gridSize / 2,
-            y: this.alife.gridSize / 2,
+            x: this.alife.gridSizeX / 2,
+            y: this.alife.gridSizeY / 2,
             radius: 0,
-            maxRadius: (this.alife.gridSize / 2) * strength,
+            maxRadius: (Math.min(this.alife.gridSizeX, this.alife.gridSizeY) / 2) * strength,
             opacity: Math.min(1, strength),
             type: beatType,
             speed: 0.3 + (strength * 0.7)
@@ -606,6 +650,20 @@ class DanceController {
             this.danceMode = mode;
         }
         console.log(`💃 Dance mode set to: ${this.danceMode}`);
+    }
+
+    setFormation(formation) {
+        this.currentFormation = formation;
+        // Smoothly transition lifeforms to new formation
+        for (const lifeform of this.alife.lifeforms.values()) {
+            lifeform.formationTransition = 0; // Start transition
+        }
+        console.log(`✨ Formation changed to: ${formation}`);
+    }
+
+    setDanceStyle(style) {
+        this.danceMode = style;
+        console.log(`💃 Dance style changed to: ${style}`);
     }
 
     setPalette(paletteName) {

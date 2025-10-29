@@ -8,7 +8,7 @@ class ArtificialLife {
         this.canvasHeight = 450;
         this.gridSizeX = 50;
         this.gridSizeY = 28;
-        this.cellSize = 12;
+        this.cellSize = 5; // Smaller cells = higher resolution grid for Kinect
 
         // Calculate responsive canvas size based on available space
         this.calculateCanvasSize();
@@ -50,7 +50,9 @@ class ArtificialLife {
         // Kinect shadow properties
         this.shadowMask = null;
         this.shadowInverted = false;
-        
+        this.shadowStyle = 'squares'; // Default visualization style
+
+        console.log('🚀 ALIFE.JS VERSION 2.0 - NEW CODE LOADED!');
         this.initializeControls();
         this.initializeMIDI();
         this.initializeAudio();
@@ -101,7 +103,7 @@ class ArtificialLife {
         canvasHeight = Math.max(minHeight, Math.min(maxHeight, canvasHeight));
 
         // Calculate cell size based on the smaller dimension
-        this.cellSize = 12; // Fixed cell size for consistency
+        this.cellSize = 5; // Smaller cells = higher resolution grid for Kinect
 
         // Store the actual canvas dimensions
         this.canvasWidth = canvasWidth;
@@ -408,6 +410,22 @@ class ArtificialLife {
             }
         });
 
+        const fullscreenBtn = document.getElementById('kinectFullscreen');
+        console.log('🔍 Fullscreen button found:', fullscreenBtn);
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                console.log('🖥️ FULLSCREEN BUTTON CLICKED!');
+                if (this.kinectController) {
+                    console.log('🖥️ Calling toggleFullscreen on kinectController');
+                    this.kinectController.toggleFullscreen();
+                } else {
+                    console.error('❌ No kinectController found!');
+                }
+            });
+        } else {
+            console.error('❌ kinectFullscreen button NOT FOUND in DOM!');
+        }
+
         document.getElementById('kinectThreshold').addEventListener('input', (e) => {
             const threshold = e.target.value;
             document.getElementById('thresholdValue').textContent = threshold + 'mm';
@@ -420,6 +438,19 @@ class ArtificialLife {
             // Invert shadow logic (show lifeforms outside shadow instead of inside)
             this.shadowInverted = e.target.checked;
         });
+
+        const styleDropdown = document.getElementById('shadowStyle');
+        console.log('🔍 Shadow style dropdown found:', styleDropdown);
+        if (styleDropdown) {
+            styleDropdown.addEventListener('change', (e) => {
+                console.log('🎨 DROPDOWN CHANGED! New value:', e.target.value);
+                // Change shadow visualization style
+                this.shadowStyle = e.target.value;
+                console.log('🎨 Shadow style set to:', this.shadowStyle);
+            });
+        } else {
+            console.error('❌ shadowStyle dropdown NOT FOUND in DOM!');
+        }
 
         // Handle fullscreen changes (including ESC key)
         document.addEventListener('fullscreenchange', () => {
@@ -785,36 +816,40 @@ class ArtificialLife {
             }
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         }
-        
-        // Draw all lifeforms
+
+        // If Kinect is ENABLED (connected), ONLY render shadow - skip lifeforms
+        const kinectActive = this.kinectController && this.kinectController.isEnabled && this.kinectController.isConnected;
+
+        // DEBUG: Log once per second
+        if (!this._lastKinectLog || Date.now() - this._lastKinectLog > 1000) {
+            console.log('🔍 Kinect Status:', {
+                hasController: !!this.kinectController,
+                isEnabled: this.kinectController?.isEnabled,
+                isConnected: this.kinectController?.isConnected,
+                kinectActive: kinectActive
+            });
+            this._lastKinectLog = Date.now();
+        }
+
+        if (kinectActive) {
+            // Clear screen to black
+            this.ctx.fillStyle = '#000000';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            this.renderKinectShadow();
+
+            // Still render survival game and text if active
+            if (this.survivalGame && this.survivalGame.isActive) {
+                this.survivalGame.render(this.ctx);
+            }
+            this.renderCenterText();
+            return; // Skip drawing lifeforms completely
+        }
+
+        // Draw all lifeforms (only if Kinect NOT enabled)
         for (const lifeform of this.lifeforms.values()) {
             const x = lifeform.x * this.cellSize;
             const y = lifeform.y * this.cellSize;
-
-            // Check if lifeform is in Kinect shadow
-            const gridX = Math.floor(lifeform.x);
-            const gridY = Math.floor(lifeform.y);
-            let isInShadow = false;
-
-            if (this.shadowMask &&
-                gridY >= 0 && gridY < this.shadowMask.length &&
-                gridX >= 0 && gridX < this.shadowMask[0].length) {
-                isInShadow = this.shadowMask[gridY][gridX];
-
-                // Apply invert if enabled
-                if (this.shadowInverted) {
-                    isInShadow = !isInShadow;
-                }
-            }
-
-            // Apply shadow visibility
-            if (this.shadowMask) {
-                if (isInShadow) {
-                    this.ctx.globalAlpha = 1.0;  // Fully visible in shadow
-                } else {
-                    this.ctx.globalAlpha = 0.05;  // Almost invisible outside shadow
-                }
-            }
 
             // Use dance colors if dance mode is active
             if (this.danceController && this.danceController.isEnabled) {
@@ -890,9 +925,6 @@ class ArtificialLife {
                 
                 this.ctx.fillRect(x, y, this.cellSize, this.cellSize);
             }
-
-            // Reset alpha after each lifeform
-            this.ctx.globalAlpha = 1.0;
         }
 
         // Render dance effects
@@ -907,6 +939,308 @@ class ArtificialLife {
 
         // Render center text (always on top)
         this.renderCenterText();
+    }
+
+    renderKinectShadow() {
+        // Only render if shadow mask exists
+        if (!this.shadowMask) return;
+
+        this.ctx.save();
+
+        // Route to appropriate rendering method based on style
+        switch (this.shadowStyle) {
+            case 'squares':
+                this.renderShadowSquares();
+                break;
+            case 'heatmap':
+                this.renderShadowHeatmap();
+                break;
+            case 'pointcloud':
+                this.renderShadowPointCloud();
+                break;
+            case 'glow':
+                this.renderShadowGlow();
+                break;
+            case 'contour':
+                this.renderShadowContour();
+                break;
+            case 'particles':
+                this.renderShadowParticles();
+                break;
+            case 'wireframe':
+                this.renderShadowWireframe();
+                break;
+            default:
+                this.renderShadowSquares();
+        }
+
+        this.ctx.restore();
+    }
+
+    renderShadowSquares() {
+        const shadowCellSize = 3; // Very small squares for detail
+
+        for (let y = 0; y < this.shadowMask.length; y++) {
+            for (let x = 0; x < this.shadowMask[y].length; x++) {
+                let isInShadow = this.shadowMask[y][x];
+                if (this.shadowInverted) isInShadow = !isInShadow;
+
+                if (isInShadow) {
+                    const pixelX = (x / this.shadowMask[0].length) * this.canvas.width;
+                    const pixelY = (y / this.shadowMask.length) * this.canvas.height;
+
+                    this.ctx.fillStyle = 'rgba(220, 220, 220, 0.95)';
+                    this.ctx.shadowColor = '#FFFFFF';
+                    this.ctx.shadowBlur = 5;
+                    this.ctx.fillRect(pixelX, pixelY, shadowCellSize, shadowCellSize);
+                }
+            }
+        }
+    }
+
+    renderShadowHeatmap() {
+        const gridWidth = this.shadowMask[0].length;
+        const gridHeight = this.shadowMask.length;
+        const cellWidth = this.canvas.width / gridWidth;
+        const cellHeight = this.canvas.height / gridHeight;
+
+        // Fast rendering - one rectangle per cell
+        for (let y = 0; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                let isInShadow = this.shadowMask[y][x];
+                if (this.shadowInverted) isInShadow = !isInShadow;
+
+                if (isInShadow) {
+                    const pixelX = x * cellWidth;
+                    const pixelY = y * cellHeight;
+
+                    // Calculate "heat" based on neighboring cells
+                    let heat = 0;
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dx = -1; dx <= 1; dx++) {
+                            const ny = y + dy;
+                            const nx = x + dx;
+                            if (ny >= 0 && ny < gridHeight && nx >= 0 && nx < gridWidth) {
+                                let neighborShadow = this.shadowMask[ny][nx];
+                                if (this.shadowInverted) neighborShadow = !neighborShadow;
+                                if (neighborShadow) heat++;
+                            }
+                        }
+                    }
+
+                    // Map heat (0-9) to color (blue -> green -> yellow -> red)
+                    const intensity = heat / 9;
+                    let r, g, b;
+                    if (intensity < 0.25) {
+                        // Blue to Cyan
+                        r = 0;
+                        g = Math.floor(intensity * 4 * 255);
+                        b = 255;
+                    } else if (intensity < 0.5) {
+                        // Cyan to Green
+                        r = 0;
+                        g = 255;
+                        b = Math.floor((1 - (intensity - 0.25) * 4) * 255);
+                    } else if (intensity < 0.75) {
+                        // Green to Yellow
+                        r = Math.floor((intensity - 0.5) * 4 * 255);
+                        g = 255;
+                        b = 0;
+                    } else {
+                        // Yellow to Red
+                        r = 255;
+                        g = Math.floor((1 - (intensity - 0.75) * 4) * 255);
+                        b = 0;
+                    }
+
+                    this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.9)`;
+                    this.ctx.fillRect(pixelX, pixelY, cellWidth + 1, cellHeight + 1);
+                }
+            }
+        }
+    }
+
+    renderShadowPointCloud() {
+        const gridWidth = this.shadowMask[0].length;
+        const gridHeight = this.shadowMask.length;
+
+        for (let y = 0; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                let isInShadow = this.shadowMask[y][x];
+                if (this.shadowInverted) isInShadow = !isInShadow;
+
+                if (isInShadow) {
+                    const pixelX = (x / gridWidth) * this.canvas.width;
+                    const pixelY = (y / gridHeight) * this.canvas.height;
+
+                    // Vary circle size based on position (simulating depth)
+                    const radius = 3 + Math.sin(x * 0.5 + y * 0.3) * 2;
+
+                    this.ctx.fillStyle = 'rgba(200, 200, 255, 0.8)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(pixelX, pixelY, radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+        }
+    }
+
+    renderShadowGlow() {
+        const gridWidth = this.shadowMask[0].length;
+        const gridHeight = this.shadowMask.length;
+
+        for (let y = 0; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                let isInShadow = this.shadowMask[y][x];
+                if (this.shadowInverted) isInShadow = !isInShadow;
+
+                if (isInShadow) {
+                    const pixelX = (x / gridWidth) * this.canvas.width;
+                    const pixelY = (y / gridHeight) * this.canvas.height;
+
+                    // Create radial gradient
+                    const gradient = this.ctx.createRadialGradient(
+                        pixelX, pixelY, 0,
+                        pixelX, pixelY, 15
+                    );
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+                    gradient.addColorStop(0.5, 'rgba(200, 200, 255, 0.4)');
+                    gradient.addColorStop(1, 'rgba(150, 150, 255, 0)');
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(pixelX - 15, pixelY - 15, 30, 30);
+                }
+            }
+        }
+    }
+
+    renderShadowContour() {
+        const gridWidth = this.shadowMask[0].length;
+        const gridHeight = this.shadowMask.length;
+        const cellWidth = this.canvas.width / gridWidth;
+        const cellHeight = this.canvas.height / gridHeight;
+
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        this.ctx.lineWidth = 2;
+
+        // Edge detection - draw lines where shadow transitions
+        for (let y = 0; y < gridHeight - 1; y++) {
+            for (let x = 0; x < gridWidth - 1; x++) {
+                let current = this.shadowMask[y][x];
+                let right = this.shadowMask[y][x + 1];
+                let bottom = this.shadowMask[y + 1][x];
+
+                if (this.shadowInverted) {
+                    current = !current;
+                    right = !right;
+                    bottom = !bottom;
+                }
+
+                const pixelX = x * cellWidth;
+                const pixelY = y * cellHeight;
+
+                // Draw vertical edge
+                if (current !== right) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(pixelX + cellWidth, pixelY);
+                    this.ctx.lineTo(pixelX + cellWidth, pixelY + cellHeight);
+                    this.ctx.stroke();
+                }
+
+                // Draw horizontal edge
+                if (current !== bottom) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(pixelX, pixelY + cellHeight);
+                    this.ctx.lineTo(pixelX + cellWidth, pixelY + cellHeight);
+                    this.ctx.stroke();
+                }
+            }
+        }
+    }
+
+    renderShadowParticles() {
+        const gridWidth = this.shadowMask[0].length;
+        const gridHeight = this.shadowMask.length;
+        const time = Date.now() * 0.001; // Time for animation
+
+        for (let y = 0; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                let isInShadow = this.shadowMask[y][x];
+                if (this.shadowInverted) isInShadow = !isInShadow;
+
+                if (isInShadow) {
+                    const baseX = (x / gridWidth) * this.canvas.width;
+                    const baseY = (y / gridHeight) * this.canvas.height;
+
+                    // Animate particles with sine waves
+                    const offsetX = Math.sin(time + x * 0.5) * 3;
+                    const offsetY = Math.cos(time + y * 0.5) * 3;
+                    const pixelX = baseX + offsetX;
+                    const pixelY = baseY + offsetY;
+
+                    // Pulsing opacity
+                    const alpha = 0.5 + Math.sin(time * 2 + x + y) * 0.3;
+
+                    this.ctx.fillStyle = `rgba(180, 200, 255, ${alpha})`;
+                    this.ctx.beginPath();
+                    this.ctx.arc(pixelX, pixelY, 2.5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+        }
+    }
+
+    renderShadowWireframe() {
+        const gridWidth = this.shadowMask[0].length;
+        const gridHeight = this.shadowMask.length;
+        const cellWidth = this.canvas.width / gridWidth;
+        const cellHeight = this.canvas.height / gridHeight;
+
+        this.ctx.strokeStyle = 'rgba(100, 255, 255, 0.6)';
+        this.ctx.lineWidth = 1;
+
+        // Draw grid lines connecting shadow cells
+        for (let y = 0; y < gridHeight; y++) {
+            for (let x = 0; x < gridWidth; x++) {
+                let isInShadow = this.shadowMask[y][x];
+                if (this.shadowInverted) isInShadow = !isInShadow;
+
+                if (isInShadow) {
+                    const pixelX = x * cellWidth + cellWidth / 2;
+                    const pixelY = y * cellHeight + cellHeight / 2;
+
+                    // Connect to right neighbor
+                    if (x < gridWidth - 1) {
+                        let rightShadow = this.shadowMask[y][x + 1];
+                        if (this.shadowInverted) rightShadow = !rightShadow;
+                        if (rightShadow) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(pixelX, pixelY);
+                            this.ctx.lineTo(pixelX + cellWidth, pixelY);
+                            this.ctx.stroke();
+                        }
+                    }
+
+                    // Connect to bottom neighbor
+                    if (y < gridHeight - 1) {
+                        let bottomShadow = this.shadowMask[y + 1][x];
+                        if (this.shadowInverted) bottomShadow = !bottomShadow;
+                        if (bottomShadow) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(pixelX, pixelY);
+                            this.ctx.lineTo(pixelX, pixelY + cellHeight);
+                            this.ctx.stroke();
+                        }
+                    }
+
+                    // Draw point at intersection
+                    this.ctx.fillStyle = 'rgba(150, 255, 255, 0.8)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(pixelX, pixelY, 2, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+            }
+        }
     }
     
     updateStats() {
@@ -950,8 +1284,9 @@ class ArtificialLife {
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
         const btn = document.getElementById('exhibitionToggle');
+        const fullscreenEl = document.fullscreenElement || document.webkitFullscreenElement;
 
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (!fullscreenEl) {
             // Exited fullscreen (either by button or ESC key)
             sidebar.style.display = 'flex';
             mainContent.style.width = '';
@@ -986,6 +1321,12 @@ class ArtificialLife {
             this.canvas.style.height = this.canvasHeight + 'px';
 
             console.log('🎨 Exhibition mode deactivated');
+        } else if (fullscreenEl === this.canvas) {
+            // Canvas is in fullscreen mode (Kinect shadow fullscreen)
+            // Resize canvas to fill screen
+            this.canvas.width = window.screen.width;
+            this.canvas.height = window.screen.height;
+            console.log('🖥️  Canvas fullscreen activated - size: ' + this.canvas.width + 'x' + this.canvas.height);
         }
     }
 

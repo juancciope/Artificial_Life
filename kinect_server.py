@@ -34,7 +34,7 @@ class KinectShadowServer:
     matching the artificial life simulation canvas dimensions.
     """
 
-    def __init__(self, grid_width=50, grid_height=28, depth_threshold=1200):
+    def __init__(self, grid_width=160, grid_height=120, depth_threshold=1200):
         """
         Initialize the Kinect shadow server.
 
@@ -106,13 +106,12 @@ class KinectShadowServer:
             # Return empty mask on error
             return [[False] * self.grid_width for _ in range(self.grid_height)]
 
-    async def handle_client(self, websocket, path):
+    async def handle_client(self, websocket):
         """
         Handle WebSocket client connections.
 
         Args:
             websocket: WebSocket connection
-            path: Connection path
         """
         self.clients.add(websocket)
         client_id = id(websocket)
@@ -230,7 +229,7 @@ Examples:
     parser.add_argument('--threshold', type=int, default=1200,
                         help='Depth threshold in mm (default: 1200)')
     parser.add_argument('--grid', type=int, nargs=2, metavar=('WIDTH', 'HEIGHT'),
-                        default=[50, 28],
+                        default=[160, 120],
                         help='Grid dimensions (default: 50 28)')
 
     args = parser.parse_args()
