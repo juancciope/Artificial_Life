@@ -49,19 +49,17 @@ class KinectShadowServer:
         self.clients = set()
         self.is_running = True
 
-        # Test Kinect connection
-        print("🎮 Testing Kinect connection...")
-        try:
-            test_depth, _ = freenect.sync_get_depth()
-            print(f"✅ Kinect detected! Depth image: {test_depth.shape}")
-        except Exception as e:
-            print(f"❌ ERROR: Could not connect to Kinect!")
-            print(f"   {str(e)}")
-            print("\nMake sure:")
-            print("  1. Kinect is plugged into USB")
-            print("  2. libfreenect is installed correctly")
-            print("  3. You have permissions to access USB devices")
-            sys.exit(1)
+        # Note: We skip the initial Kinect test because sync_get_depth() can hang
+        # The connection will be tested when the server starts capturing frames
+        print("🎮 Kinect initialized")
+        print("⚠️  Motor control not available with sync API")
+        print("   Use standalone tilt script: python3 kinect_tilt.py <angle>")
+        print("   (Connection will be tested when capturing starts)")
+
+    def cleanup(self):
+        """Clean up Kinect device resources"""
+        # Using sync API - no manual cleanup needed
+        print("✅ Server shutdown complete")
 
     def get_shadow_mask(self):
         """
@@ -131,6 +129,12 @@ class KinectShadowServer:
                         self.grid_width = data['grid_size']['width']
                         self.grid_height = data['grid_size']['height']
                         print(f"📐 Grid size updated: {self.grid_width}x{self.grid_height}")
+
+                    if 'tilt' in data:
+                        tilt_angle = int(data['tilt'])
+                        print(f"⚠️  Tilt control not available in server mode")
+                        print(f"   Requested angle: {tilt_angle}°")
+                        print(f"   Stop server and run: python3 kinect_tilt.py {tilt_angle}")
 
                 except json.JSONDecodeError:
                     print(f"⚠️  Invalid JSON from client: {message}")
@@ -245,6 +249,8 @@ Examples:
         asyncio.run(server.start(host=args.host, port=args.port))
     except KeyboardInterrupt:
         print("\n\n🛑 Server stopped by user")
+    finally:
+        server.cleanup()
         sys.exit(0)
 
 

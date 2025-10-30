@@ -967,9 +967,6 @@ class ArtificialLife {
             case 'particles':
                 this.renderShadowParticles();
                 break;
-            case 'wireframe':
-                this.renderShadowWireframe();
-                break;
             default:
                 this.renderShadowSquares();
         }
@@ -1190,59 +1187,6 @@ class ArtificialLife {
         }
     }
 
-    renderShadowWireframe() {
-        const gridWidth = this.shadowMask[0].length;
-        const gridHeight = this.shadowMask.length;
-        const cellWidth = this.canvas.width / gridWidth;
-        const cellHeight = this.canvas.height / gridHeight;
-
-        this.ctx.strokeStyle = 'rgba(100, 255, 255, 0.6)';
-        this.ctx.lineWidth = 1;
-
-        // Draw grid lines connecting shadow cells
-        for (let y = 0; y < gridHeight; y++) {
-            for (let x = 0; x < gridWidth; x++) {
-                let isInShadow = this.shadowMask[y][x];
-                if (this.shadowInverted) isInShadow = !isInShadow;
-
-                if (isInShadow) {
-                    const pixelX = x * cellWidth + cellWidth / 2;
-                    const pixelY = y * cellHeight + cellHeight / 2;
-
-                    // Connect to right neighbor
-                    if (x < gridWidth - 1) {
-                        let rightShadow = this.shadowMask[y][x + 1];
-                        if (this.shadowInverted) rightShadow = !rightShadow;
-                        if (rightShadow) {
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(pixelX, pixelY);
-                            this.ctx.lineTo(pixelX + cellWidth, pixelY);
-                            this.ctx.stroke();
-                        }
-                    }
-
-                    // Connect to bottom neighbor
-                    if (y < gridHeight - 1) {
-                        let bottomShadow = this.shadowMask[y + 1][x];
-                        if (this.shadowInverted) bottomShadow = !bottomShadow;
-                        if (bottomShadow) {
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(pixelX, pixelY);
-                            this.ctx.lineTo(pixelX, pixelY + cellHeight);
-                            this.ctx.stroke();
-                        }
-                    }
-
-                    // Draw point at intersection
-                    this.ctx.fillStyle = 'rgba(150, 255, 255, 0.8)';
-                    this.ctx.beginPath();
-                    this.ctx.arc(pixelX, pixelY, 2, 0, Math.PI * 2);
-                    this.ctx.fill();
-                }
-            }
-        }
-    }
-    
     updateStats() {
         document.getElementById('currentCount').textContent = this.lifeforms.size;
         document.getElementById('totalCount').textContent = this.session.totalLifeformsCreated;

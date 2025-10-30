@@ -3,3 +3,13 @@
 __pycache__
 *.egg-info/
 misc/*
+
+# Backup files
+*.backup
+
+# macOS
+.DS_Store
+
+# Chrome Extension
+chrome-extension/*.pem
+*.crx

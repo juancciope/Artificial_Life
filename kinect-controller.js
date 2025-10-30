@@ -138,6 +138,14 @@ class KinectController {
         }
     }
 
+    setTilt(tilt) {
+        if (this.socket && this.isConnected) {
+            const message = JSON.stringify({ tilt: parseInt(tilt) });
+            this.socket.send(message);
+            console.log(`🎚️  Set Kinect tilt angle: ${tilt}°`);
+        }
+    }
+
     enable() {
         this.isEnabled = true;
         console.log('👁️  Kinect shadow mode ENABLED');

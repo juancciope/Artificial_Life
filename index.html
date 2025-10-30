@@ -231,14 +231,24 @@
                                         <option value="glow">Glow (Radial)</option>
                                         <option value="contour">Contour (Edges)</option>
                                         <option value="particles">Particles (Organic)</option>
-                                        <option value="wireframe">Wireframe (Grid)</option>
                                     </select>
 
                                     <label class="control-label">Depth Threshold:</label>
                                     <input type="range" id="kinectThreshold" min="400" max="3000" value="1200" class="slider">
                                     <span id="thresholdValue">1200mm</span>
 
-                                    <label class="toggle">
+                                    <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; border: 1px solid #444;">
+                                        <div style="color: #88AAFF; font-weight: bold; margin-bottom: 5px;">🎚️ Adjust Kinect Tilt:</div>
+                                        <div style="color: #AAA; font-size: 0.75rem; line-height: 1.4;">
+                                            Stop the server and run:<br>
+                                            <code style="background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 3px; color: #00FF00;">python3 kinect_tilt.py 15</code><br>
+                                            <span style="color: #666; font-size: 0.7rem;">
+                                                (Tilt UP if head cut off, DOWN if feet cut off)
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <label class="toggle" style="margin-top: 15px;">
                                         <input type="checkbox" id="kinectInvert">
                                         <span class="toggle-label">Invert Shadow</span>
                                     </label>
