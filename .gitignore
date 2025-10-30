@@ -10,6 +10,18 @@ misc/*
 # macOS
 .DS_Store
 
-# Chrome Extension
-chrome-extension/*.pem
+# Chrome Extension (experimental/unused)
+chrome-extension/
+native-host/
+install-native-host-macos.sh
+update-extension-id.sh
+CHROME_EXTENSION_QUICK_START.md
+*.pem
 *.crx
+
+# Multi-Kinect experiment (reverted)
+MULTI_KINECT_SETUP.md
+test_kinects.py
+
+# Temporary documentation
+FRONT_END_UPDATES.md
