@@ -47,6 +47,22 @@ class ArtificialLife {
         this.textBounds = null;
         this.textBordersEnabled = true;
 
+        // Center image properties
+        this.centerImage = new Image();
+        this.centerImage.crossOrigin = 'anonymous';
+        this.centerImage.src = 'https://4hblfgvj0slkdrlo.public.blob.vercel-storage.com/scrubz.png';
+        this.centerImageEnabled = false;
+        this.centerImageLoaded = false;
+
+        this.centerImage.onload = () => {
+            this.centerImageLoaded = true;
+            console.log('✅ DJ Logo loaded successfully');
+        };
+
+        this.centerImage.onerror = () => {
+            console.error('❌ Failed to load DJ Logo');
+        };
+
         // Kinect shadow properties
         this.shadowMask = null;
         this.shadowInverted = false;
@@ -231,6 +247,42 @@ class ArtificialLife {
         this.ctx.restore();
     }
 
+    renderCenterImage() {
+        if (!this.centerImageEnabled || !this.centerImageLoaded) {
+            return;
+        }
+
+        this.ctx.save();
+
+        const centerX = this.canvasWidth / 2;
+        const centerY = this.canvasHeight / 2;
+
+        // Calculate image dimensions (scale to fit nicely on canvas)
+        // Adjust the scale factor to make the logo an appropriate size
+        const maxWidth = this.canvasWidth * 0.4; // 40% of canvas width
+        const maxHeight = this.canvasHeight * 0.4; // 40% of canvas height
+
+        let imgWidth = this.centerImage.width;
+        let imgHeight = this.centerImage.height;
+
+        // Scale to fit within max dimensions while maintaining aspect ratio
+        const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+        imgWidth *= scale;
+        imgHeight *= scale;
+
+        // Draw the image centered
+        const x = centerX - imgWidth / 2;
+        const y = centerY - imgHeight / 2;
+
+        // Add a subtle glow effect
+        this.ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+        this.ctx.shadowBlur = 20;
+
+        this.ctx.drawImage(this.centerImage, x, y, imgWidth, imgHeight);
+
+        this.ctx.restore();
+    }
+
     checkTextCollision(gridX, gridY) {
         if (!this.textBounds) {
             return false;
@@ -392,6 +444,11 @@ class ArtificialLife {
 
         document.getElementById('textBorderToggle').addEventListener('change', (e) => {
             this.textBordersEnabled = e.target.checked;
+        });
+
+        document.getElementById('centerImageToggle').addEventListener('change', (e) => {
+            this.centerImageEnabled = e.target.checked;
+            console.log(e.target.checked ? '🎨 DJ Logo activated' : '🎨 DJ Logo deactivated');
         });
 
         // Kinect controls
@@ -843,6 +900,7 @@ class ArtificialLife {
                 this.survivalGame.render(this.ctx);
             }
             this.renderCenterText();
+            this.renderCenterImage();
             return; // Skip drawing lifeforms completely
         }
 
@@ -939,6 +997,7 @@ class ArtificialLife {
 
         // Render center text (always on top)
         this.renderCenterText();
+        this.renderCenterImage();
     }
 
     renderKinectShadow() {
